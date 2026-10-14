@@ -1,0 +1,75 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Seafloor
+  m_Shader: {fileID: 4800000, guid: 88f2c29ce9e332f418bb09830576e1e2, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _GravelMap:
+        m_Texture: {fileID: 2800000, guid: 9c646635d29cc5947b0a38df8aa091a0, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _GravelNormal:
+        m_Texture: {fileID: 2800000, guid: 5514014d80d78d845b825da6ee80e264, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _RockMap:
+        m_Texture: {fileID: 2800000, guid: 48d08c25775dbc148baee701486cb46c, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _RockNormal:
+        m_Texture: {fileID: 2800000, guid: 601905daa6bb9e547bfd3fef4be91a65, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SandMap:
+        m_Texture: {fileID: 2800000, guid: 623bce406e31b4c4d875bcc3fee52fd9, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SandNormal:
+        m_Texture: {fileID: 2800000, guid: 80f3b419da2775547af55232002efdd4, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SiltMap:
+        m_Texture: {fileID: 2800000, guid: 04caf766f956b3a419173147d99947fc, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SiltNormal:
+        m_Texture: {fileID: 2800000, guid: 616815af3ccba3947b909aeb24be91a1, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _BlendDepth: 0.2
+    - _CausticFadeDepth: 35
+    - _CausticSize: 7
+    - _CausticSpeed: 0.5
+    - _CausticStrength: 2.4
+    - _GravelTiling: 2.5
+    - _NormalStrength: 1
+    - _RockTiling: 6
+    - _SandTiling: 5
+    - _SiltTiling: 3
+    m_Colors:
+    - _CausticColor: {r: 0.65, g: 0.95, b: 1, a: 1}
+    - _RockSlope: {r: 0.3, g: 0.55, b: 0, a: 0}
+    - _Tint: {r: 0.78, g: 0.92, b: 1, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
