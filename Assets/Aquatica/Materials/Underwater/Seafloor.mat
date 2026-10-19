@@ -58,15 +58,16 @@ Material:
     m_Ints: []
     m_Floats:
     - _BlendDepth: 0.2
-    - _CausticFadeDepth: 35
-    - _CausticSize: 7
+    - _CausticFadeDepth: 82
+    - _CausticFullDepth: 60
+    - _CausticSize: 12
     - _CausticSpeed: 0.5
     - _CausticStrength: 2.4
-    - _GravelTiling: 2.5
+    - _GravelTiling: 6
     - _NormalStrength: 1
-    - _RockTiling: 6
-    - _SandTiling: 5
-    - _SiltTiling: 3
+    - _RockTiling: 14
+    - _SandTiling: 12
+    - _SiltTiling: 8
     m_Colors:
     - _CausticColor: {r: 0.65, g: 0.95, b: 1, a: 1}
     - _RockSlope: {r: 0.3, g: 0.55, b: 0, a: 0}

@@ -16,6 +16,7 @@ namespace Aquatica.Cockpit
 
         const int MouseId = -1;
         readonly Dictionary<int, ICockpitInteractable> active = new();
+        readonly RaycastHit[] hits = new RaycastHit[16];
 
         void Update()
         {
@@ -52,7 +53,7 @@ namespace Aquatica.Cockpit
             if (pressed)
             {
                 Release(id);
-                if (Physics.Raycast(ray, out var hit, maxDistance, layers, QueryTriggerInteraction.Collide))
+                if (TryCarriedControl(ray, out var hit) || Physics.Raycast(ray, out hit, maxDistance, layers, QueryTriggerInteraction.Collide))
                 {
                     var target = hit.collider.GetComponentInParent<ICockpitInteractable>();
                     if (target != null)
@@ -69,6 +70,27 @@ namespace Aquatica.Cockpit
 
             if (released || !held)
                 Release(id);
+        }
+
+        /// <summary>
+        /// Controls carried with the camera (e.g. the navigation throttle) always draw on top of the cockpit, so
+        /// they win over any wall the ray would hit first.
+        /// </summary>
+        bool TryCarriedControl(Ray ray, out RaycastHit nearest)
+        {
+            nearest = default;
+            int count = Physics.RaycastNonAlloc(ray, hits, maxDistance, layers, QueryTriggerInteraction.Collide);
+            float best = float.MaxValue;
+            for (int i = 0; i < count; i++)
+            {
+                var hit = hits[i];
+                if (hit.distance < best && hit.collider.transform.IsChildOf(viewCamera.transform))
+                {
+                    best = hit.distance;
+                    nearest = hit;
+                }
+            }
+            return best < float.MaxValue;
         }
 
         void Release(int id)

@@ -7,13 +7,16 @@ using UnityEngine.XR.ARFoundation;
 namespace Aquatica.Underwater
 {
     /// <summary>
-    /// The world on the other side of the portal: a procedurally generated seafloor (seeded), the water
-    /// surface overhead and the submarine the viewer stands in. <see cref="Enter"/> lines the cockpit up
+    /// The world on the other side of the portal: a procedurally generated seafloor (seeded) with rock arches,
+    /// the water surface far overhead and the submarine the viewer stands in. <see cref="Enter"/> lines the cockpit up
     /// with the viewer, turns off the AR camera feed and switches lighting, fog and reflections to underwater.
     /// </summary>
     public class UnderwaterWorld : MonoBehaviour
     {
         static readonly int SurfaceHeightId = Shader.PropertyToID("_AquaticaSurfaceHeight");
+
+        /// <summary>Layer of solid terrain features (rock arches) the submarine collides with.</summary>
+        public const string TerrainLayerName = "Terrain";
 
         [Header("Generation")]
         [SerializeField] int seed = 1337;
@@ -22,18 +25,19 @@ namespace Aquatica.Underwater
         [SerializeField] SeafloorSettings seafloorSettings = new();
         [SerializeField] Material seafloorMaterial;
         [SerializeField] Material waterSurfaceMaterial;
+        [SerializeField] RockArchSettings archSettings = new();
 
         [Header("Layout (relative to the cockpit floor)")]
         [Tooltip("Where the viewer stands: on the cabin floor, facing the front window.")]
         [SerializeField] Transform cockpitAnchor;
         [SerializeField] float seafloorDepth = 5f;
-        [SerializeField] float surfaceHeight = 14f;
+        [SerializeField] float surfaceHeight = 70f;
         [Tooltip("Ground under the submarine is levelled within this radius.")]
-        [SerializeField] float clearRadius = 10f;
-        [SerializeField] float surfaceSize = 260f;
+        [SerializeField] float clearRadius = 18f;
+        [SerializeField] float surfaceSize = 600f;
 
         [Header("Atmosphere")]
-        [SerializeField] Color fogColor = new(0.02f, 0.11f, 0.15f);
+        [SerializeField] Color fogColor = new(0.015f, 0.085f, 0.12f);
         [SerializeField] float fogDensity = 0.038f;
         [SerializeField] Color ambientTop = new(0.15f, 0.32f, 0.38f);
         [SerializeField] Color ambientBottom = new(0.01f, 0.035f, 0.05f);
@@ -46,6 +50,7 @@ namespace Aquatica.Underwater
 
         Seafloor seafloor;
         Transform seafloorTransform;
+        Transform surfaceTransform;
         readonly List<Behaviour> disabledBehaviours = new();
         readonly List<Mesh> generatedMeshes = new();
         Cubemap reflectionCube;
@@ -53,6 +58,12 @@ namespace Aquatica.Underwater
 
         public int Seed => seed;
         public Seafloor Seafloor => seafloor;
+
+        /// <summary>The seafloor's transform: <see cref="Seafloor"/> coordinates are local to it.</summary>
+        public Transform SeafloorTransform => seafloorTransform;
+
+        /// <summary>World-space height of the water surface.</summary>
+        public float SurfaceHeight => surfaceTransform != null ? surfaceTransform.position.y : transform.position.y + surfaceHeight;
 
         /// <summary>World-space seafloor height below a point (useful for placing rocks, corals and fish later).</summary>
         public float SampleSeafloorHeight(Vector3 worldPosition)
@@ -91,23 +102,54 @@ namespace Aquatica.Underwater
 
         void Generate()
         {
-            // Seafloor centred under the cockpit, in this root's space
+            // Seafloor centred under the cockpit, in this root's space, built as tiles so only visible ones draw
             var anchorLocal = transform.InverseTransformPoint(cockpitAnchor.position);
             seafloor = new Seafloor(seafloorSettings, seed, clearRadius, anchorLocal.y - seafloorDepth);
-            seafloorTransform = CreatePart("Seafloor", seafloor.BuildMesh(), seafloorMaterial, new Vector3(anchorLocal.x, 0f, anchorLocal.z), true);
+            seafloorTransform = new GameObject("Seafloor").transform;
+            seafloorTransform.SetParent(transform, false);
+            seafloorTransform.localPosition = new Vector3(anchorLocal.x, 0f, anchorLocal.z);
 
-            var surface = CreatePart("WaterSurface", BuildSurfaceMesh(surfaceSize, 64), waterSurfaceMaterial,
+            // Arches first: they heap rubble mounds into the ground the tiles are built from
+            BuildArches();
+            foreach (var tile in seafloor.BuildTiles())
+                CreatePart(tile.name, tile, seafloorMaterial, Vector3.zero, true, seafloorTransform);
+
+            surfaceTransform = CreatePart("WaterSurface", BuildSurfaceMesh(surfaceSize, 64), waterSurfaceMaterial,
                 new Vector3(anchorLocal.x, anchorLocal.y + surfaceHeight, anchorLocal.z), false);
 
             // Caustics fade with depth below the surface
-            Shader.SetGlobalFloat(SurfaceHeightId, surface.position.y);
+            Shader.SetGlobalFloat(SurfaceHeightId, surfaceTransform.position.y);
         }
 
-        Transform CreatePart(string partName, Mesh mesh, Material material, Vector3 localPosition, bool receiveShadows)
+        /// <summary>Rock arches standing on the seafloor, with convex collider chunks on the terrain layer.</summary>
+        void BuildArches()
+        {
+            int layer = LayerMask.NameToLayer(TerrainLayerName);
+            var root = new GameObject("RockArches").transform;
+            root.SetParent(seafloorTransform, false);
+            foreach (var arch in RockArches.Generate(seafloor, archSettings, seed))
+            {
+                var part = CreatePart("RockArch", arch.Mesh, seafloorMaterial, Vector3.zero, true, root);
+                // Colliders on a child without a MeshFilter, so they don't pick up (and cook) the render mesh
+                var colliders = new GameObject("Collision");
+                colliders.transform.SetParent(part, false);
+                if (layer >= 0)
+                    colliders.layer = layer;
+                foreach (var chunk in arch.ColliderChunks)
+                {
+                    generatedMeshes.Add(chunk);
+                    var collider = colliders.AddComponent<MeshCollider>();
+                    collider.sharedMesh = chunk;
+                    collider.convex = true;
+                }
+            }
+        }
+
+        Transform CreatePart(string partName, Mesh mesh, Material material, Vector3 localPosition, bool receiveShadows, Transform parent = null)
         {
             generatedMeshes.Add(mesh);
             var go = new GameObject(partName);
-            go.transform.SetParent(transform, false);
+            go.transform.SetParent(parent != null ? parent : transform, false);
             go.transform.localPosition = localPosition;
             go.AddComponent<MeshFilter>().sharedMesh = mesh;
             var r = go.AddComponent<MeshRenderer>();

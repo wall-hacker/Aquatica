@@ -37,11 +37,23 @@ namespace Aquatica.Player
                 return existing;
             var blocker = camera.transform.root.gameObject.AddComponent<CameraWallBlocker>();
             blocker.viewer = camera.transform;
+            // Terrain outside the hull is the submarine's business, not the player's head
+            blocker.solidLayers &= ~LayerMask.GetMask(Underwater.UnderwaterWorld.TerrainLayerName);
             return blocker;
         }
 
         /// <summary>Forget the last position, e.g. after deliberately teleporting the rig.</summary>
         public void ResetTracking() => hasLast = false;
+
+        /// <summary>
+        /// The rig was carried along by something moving (e.g. the submarine) together with the walls around it:
+        /// move the last valid position along too, so the carried motion isn't swept against the walls.
+        /// </summary>
+        public void Carry(Matrix4x4 delta)
+        {
+            if (hasLast)
+                lastPosition = delta.MultiplyPoint3x4(lastPosition);
+        }
 
         void Awake()
         {

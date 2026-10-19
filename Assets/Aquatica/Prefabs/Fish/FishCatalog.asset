@@ -1,0 +1,353 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b08de7d9e3b1c04bae07c04376ac09e, type: 3}
+  m_Name: FishCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::Aquatica.Underwater.Fish.FishCatalog
+  species:
+  - name: Fusilier
+    prefabs:
+    - {fileID: 2963345470771754477, guid: f7537ad7b443d9645802ef24090887ac, type: 3}
+    spawnWeight: 1.2
+    social: 2
+    groupSize: {x: 8, y: 14}
+    spread: 2.2
+    length: {x: 0.4, y: 0.55}
+    heightAboveFloor: {x: 3, y: 10}
+    cruiseSpeed: 0.9
+    fleeSpeed: 3.2
+    feeding: 0
+    curiosity: 0.1
+    shelter: 0
+    skittishness: 1.2
+  - name: Bluefin Trevally
+    prefabs:
+    - {fileID: 8671023706715144946, guid: 49bc5a0f2afdab54eb70d52e74b4c661, type: 3}
+    spawnWeight: 0.6
+    social: 2
+    groupSize: {x: 4, y: 7}
+    spread: 2.5
+    length: {x: 0.8, y: 1.15}
+    heightAboveFloor: {x: 2, y: 9}
+    cruiseSpeed: 1.1
+    fleeSpeed: 3.8
+    feeding: 0
+    curiosity: 0.6
+    shelter: 0
+    skittishness: 1.2
+  - name: Blue Tang
+    prefabs:
+    - {fileID: 8671103025338943371, guid: 88059ff2544807a4c96add166d60e1eb, type: 3}
+    spawnWeight: 1
+    social: 2
+    groupSize: {x: 4, y: 8}
+    spread: 1.6
+    length: {x: 0.35, y: 0.5}
+    heightAboveFloor: {x: 0.8, y: 5}
+    cruiseSpeed: 0.6
+    fleeSpeed: 2.6
+    feeding: 0.6
+    curiosity: 0.2
+    shelter: 0.4
+    skittishness: 1.2
+  - name: Yellow Tang
+    prefabs:
+    - {fileID: 2904103138744101997, guid: e00202181dee75b4caba60f133a204c6, type: 3}
+    spawnWeight: 1
+    social: 2
+    groupSize: {x: 5, y: 10}
+    spread: 1.5
+    length: {x: 0.25, y: 0.35}
+    heightAboveFloor: {x: 0.6, y: 4}
+    cruiseSpeed: 0.55
+    fleeSpeed: 2.5
+    feeding: 0.7
+    curiosity: 0.15
+    shelter: 0.4
+    skittishness: 1.2
+  - name: Powder Blue Tang
+    prefabs:
+    - {fileID: 3432287979869422100, guid: c0373964f246fcf44879c2e5bf09c5e5, type: 3}
+    spawnWeight: 0.8
+    social: 2
+    groupSize: {x: 3, y: 7}
+    spread: 1.4
+    length: {x: 0.3, y: 0.4}
+    heightAboveFloor: {x: 0.6, y: 4}
+    cruiseSpeed: 0.6
+    fleeSpeed: 2.6
+    feeding: 0.7
+    curiosity: 0.15
+    shelter: 0.4
+    skittishness: 1.2
+  - name: Purple Tang
+    prefabs:
+    - {fileID: 2313296430654896163, guid: 7e0048cf4a6860b4c97968abffce8db5, type: 3}
+    spawnWeight: 0.7
+    social: 2
+    groupSize: {x: 3, y: 6}
+    spread: 1.4
+    length: {x: 0.3, y: 0.4}
+    heightAboveFloor: {x: 0.6, y: 4}
+    cruiseSpeed: 0.6
+    fleeSpeed: 2.6
+    feeding: 0.7
+    curiosity: 0.15
+    shelter: 0.4
+    skittishness: 1.2
+  - name: Convict Tang
+    prefabs:
+    - {fileID: 1369365958481064781, guid: 8c81ab4bc0dacf745b6c2a240286d876, type: 3}
+    spawnWeight: 1
+    social: 2
+    groupSize: {x: 6, y: 12}
+    spread: 1.8
+    length: {x: 0.25, y: 0.35}
+    heightAboveFloor: {x: 0.4, y: 3}
+    cruiseSpeed: 0.55
+    fleeSpeed: 2.5
+    feeding: 0.8
+    curiosity: 0.1
+    shelter: 0.4
+    skittishness: 1.2
+  - name: Lined Surgeonfish
+    prefabs:
+    - {fileID: 2329357522679067792, guid: 25967ed8aada0a448bf869c353cc8d0a, type: 3}
+    spawnWeight: 0.6
+    social: 2
+    groupSize: {x: 3, y: 5}
+    spread: 1.6
+    length: {x: 0.5, y: 0.65}
+    heightAboveFloor: {x: 0.5, y: 4}
+    cruiseSpeed: 0.65
+    fleeSpeed: 2.8
+    feeding: 0.7
+    curiosity: 0.2
+    shelter: 0.3
+    skittishness: 1.2
+  - name: Bannerfish
+    prefabs:
+    - {fileID: 5211726266759370475, guid: f25963c77493c8a498beb63d9879f9d5, type: 3}
+    spawnWeight: 0.8
+    social: 2
+    groupSize: {x: 4, y: 8}
+    spread: 1.6
+    length: {x: 0.3, y: 0.4}
+    heightAboveFloor: {x: 1, y: 6}
+    cruiseSpeed: 0.5
+    fleeSpeed: 2.4
+    feeding: 0.3
+    curiosity: 0.4
+    shelter: 0.3
+    skittishness: 1.2
+  - name: Discus
+    prefabs:
+    - {fileID: 1286136930130002601, guid: 4340ef756516a0b469ad346ade23e630, type: 3}
+    - {fileID: 5276614137611256615, guid: 675c84157fa914749b4921f97fe1a854, type: 3}
+    - {fileID: 5013408868828913449, guid: 3ec841bdc8608244fa9c186dfc83e78c, type: 3}
+    - {fileID: 5185779154462828393, guid: 1c247f7382a31a647a9fdb0153114b5d, type: 3}
+    - {fileID: 5827446773551190490, guid: 794e7d9bf9c9f974e927580b4157fe41, type: 3}
+    - {fileID: 6108419693040110716, guid: 2892049d18b93894b8f77e8a29dbd52a, type: 3}
+    - {fileID: 2640096705417410411, guid: 832dc0cd78b7fe6438066dc0e50f7865, type: 3}
+    - {fileID: 463168066200828072, guid: fa2704226a3df5d46a8f83cc2f54503d, type: 3}
+    - {fileID: 3596451045164556368, guid: 71fc76f2b8917a949af347ae08a408d5, type: 3}
+    spawnWeight: 0.9
+    social: 2
+    groupSize: {x: 4, y: 8}
+    spread: 1.4
+    length: {x: 0.25, y: 0.35}
+    heightAboveFloor: {x: 0.6, y: 4}
+    cruiseSpeed: 0.45
+    fleeSpeed: 2.2
+    feeding: 0.6
+    curiosity: 0.3
+    shelter: 0.4
+    skittishness: 1.2
+  - name: Copperband Butterflyfish
+    prefabs:
+    - {fileID: 2398424347703254960, guid: d6e0ad0153009de48addea99973ce376, type: 3}
+    spawnWeight: 0.7
+    social: 1
+    groupSize: {x: 2, y: 2}
+    spread: 0.5
+    length: {x: 0.25, y: 0.35}
+    heightAboveFloor: {x: 0.3, y: 2.2}
+    cruiseSpeed: 0.45
+    fleeSpeed: 2.3
+    feeding: 0.9
+    curiosity: 0.45
+    shelter: 0.6
+    skittishness: 1
+  - name: Threadfin Butterflyfish
+    prefabs:
+    - {fileID: 5050796743995434571, guid: 7c0509b704bdb8b44b9eb7a6e4ab48a6, type: 3}
+    spawnWeight: 0.7
+    social: 1
+    groupSize: {x: 2, y: 2}
+    spread: 0.5
+    length: {x: 0.3, y: 0.4}
+    heightAboveFloor: {x: 0.3, y: 2.2}
+    cruiseSpeed: 0.45
+    fleeSpeed: 2.3
+    feeding: 0.9
+    curiosity: 0.45
+    shelter: 0.6
+    skittishness: 1
+  - name: Double-saddle Butterflyfish
+    prefabs:
+    - {fileID: 514772218390748459, guid: e77e6dcb71e5db845ac2bdaf35e07950, type: 3}
+    spawnWeight: 0.6
+    social: 1
+    groupSize: {x: 2, y: 2}
+    spread: 0.5
+    length: {x: 0.25, y: 0.35}
+    heightAboveFloor: {x: 0.3, y: 2.2}
+    cruiseSpeed: 0.45
+    fleeSpeed: 2.3
+    feeding: 0.9
+    curiosity: 0.45
+    shelter: 0.6
+    skittishness: 1
+  - name: Yellow Longnose Butterflyfish
+    prefabs:
+    - {fileID: 3766363224169454116, guid: 3c3b79d73e2d2f2448c0a858ed6b5e7c, type: 3}
+    spawnWeight: 0.6
+    social: 1
+    groupSize: {x: 2, y: 2}
+    spread: 0.5
+    length: {x: 0.3, y: 0.35}
+    heightAboveFloor: {x: 0.3, y: 2.2}
+    cruiseSpeed: 0.45
+    fleeSpeed: 2.3
+    feeding: 0.9
+    curiosity: 0.45
+    shelter: 0.6
+    skittishness: 1
+  - name: Clownfish
+    prefabs:
+    - {fileID: 3131141932009350170, guid: 594ba1cd8e430124a83aea6f7cf4a6bc, type: 3}
+    spawnWeight: 0.7
+    social: 1
+    groupSize: {x: 2, y: 2}
+    spread: 0.4
+    length: {x: 0.15, y: 0.2}
+    heightAboveFloor: {x: 0.2, y: 1.5}
+    cruiseSpeed: 0.3
+    fleeSpeed: 1.8
+    feeding: 0.4
+    curiosity: 0.7
+    shelter: 0.9
+    skittishness: 1
+  - name: Black Clownfish
+    prefabs:
+    - {fileID: 3035470056632216723, guid: d1480869e18f7a041a1662d175092eac, type: 3}
+    spawnWeight: 0.5
+    social: 1
+    groupSize: {x: 2, y: 2}
+    spread: 0.4
+    length: {x: 0.15, y: 0.2}
+    heightAboveFloor: {x: 0.2, y: 1.5}
+    cruiseSpeed: 0.3
+    fleeSpeed: 1.8
+    feeding: 0.4
+    curiosity: 0.7
+    shelter: 0.9
+    skittishness: 1
+  - name: Emperor Angelfish
+    prefabs:
+    - {fileID: 155168931186860382, guid: 73c607b2cefed84418e82b3e53185eb4, type: 3}
+    spawnWeight: 0.5
+    social: 0
+    groupSize: {x: 1, y: 1}
+    spread: 0
+    length: {x: 0.55, y: 0.7}
+    heightAboveFloor: {x: 0.5, y: 3}
+    cruiseSpeed: 0.45
+    fleeSpeed: 2.4
+    feeding: 0.7
+    curiosity: 0.6
+    shelter: 0.6
+    skittishness: 1
+  - name: Juvenile Emperor Angelfish
+    prefabs:
+    - {fileID: 6748985001104602870, guid: 0cd11642a61ad784581f62eba3bdff58, type: 3}
+    spawnWeight: 0.4
+    social: 0
+    groupSize: {x: 1, y: 1}
+    spread: 0
+    length: {x: 0.2, y: 0.25}
+    heightAboveFloor: {x: 0.2, y: 1.8}
+    cruiseSpeed: 0.35
+    fleeSpeed: 2
+    feeding: 0.7
+    curiosity: 0.4
+    shelter: 0.9
+    skittishness: 1
+  - name: Regal Angelfish
+    prefabs:
+    - {fileID: 37257891720410337, guid: 8ce7f12678c89314abc5169458761718, type: 3}
+    spawnWeight: 0.5
+    social: 0
+    groupSize: {x: 1, y: 1}
+    spread: 0
+    length: {x: 0.35, y: 0.45}
+    heightAboveFloor: {x: 0.4, y: 2.5}
+    cruiseSpeed: 0.4
+    fleeSpeed: 2.3
+    feeding: 0.7
+    curiosity: 0.5
+    shelter: 0.7
+    skittishness: 1
+  - name: Bicolor Angelfish
+    prefabs:
+    - {fileID: 8209456280177685115, guid: 7971292ea40242c4f9eb100079556947, type: 3}
+    spawnWeight: 0.5
+    social: 0
+    groupSize: {x: 1, y: 1}
+    spread: 0
+    length: {x: 0.2, y: 0.25}
+    heightAboveFloor: {x: 0.2, y: 2}
+    cruiseSpeed: 0.35
+    fleeSpeed: 2
+    feeding: 0.7
+    curiosity: 0.3
+    shelter: 0.9
+    skittishness: 1
+  - name: Flame Angelfish
+    prefabs:
+    - {fileID: 1033755851343374012, guid: 41b2929c4c91c4249a1d15e7f9b9e6a7, type: 3}
+    spawnWeight: 0.5
+    social: 0
+    groupSize: {x: 1, y: 1}
+    spread: 0
+    length: {x: 0.15, y: 0.2}
+    heightAboveFloor: {x: 0.2, y: 1.5}
+    cruiseSpeed: 0.3
+    fleeSpeed: 1.8
+    feeding: 0.7
+    curiosity: 0.25
+    shelter: 0.95
+    skittishness: 1
+  - name: Clown Triggerfish
+    prefabs:
+    - {fileID: 1090475649304621300, guid: d23da2e3c47c7a24c864b05560f2fad9, type: 3}
+    spawnWeight: 0.4
+    social: 0
+    groupSize: {x: 1, y: 1}
+    spread: 0
+    length: {x: 0.55, y: 0.7}
+    heightAboveFloor: {x: 0.4, y: 3}
+    cruiseSpeed: 0.5
+    fleeSpeed: 2.6
+    feeding: 0.8
+    curiosity: 0.5
+    shelter: 0.5
+    skittishness: 1

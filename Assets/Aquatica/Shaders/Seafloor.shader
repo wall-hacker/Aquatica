@@ -2,7 +2,7 @@
 // (R = rock, G = silt, B = gravel, A = occlusion) plus the surface slope: steep ground always turns to rock.
 // Layers are blended by their height maps (stored in the albedo alpha) so pebbles and rocks poke through
 // sand instead of cross-fading. Rock is projected triplanar so cliffs don't stretch. Animated caustics are
-// projected along the sun direction and fade with depth below the water surface.
+// projected along the sun direction and fade out between two depths below the water surface.
 Shader "Aquatica/Seafloor"
 {
     Properties
@@ -38,7 +38,8 @@ Shader "Aquatica/Seafloor"
         _CausticStrength ("Caustic Strength", Range(0, 4)) = 1.6
         _CausticSize ("Caustic Size (m)", Float) = 7
         _CausticSpeed ("Caustic Speed", Float) = 0.5
-        _CausticFadeDepth ("Caustics Vanish At Depth (m)", Float) = 35
+        _CausticFullDepth ("Caustics Full Strength Above Depth (m)", Float) = 60
+        _CausticFadeDepth ("Caustics Vanish At Depth (m)", Float) = 82
     }
 
     SubShader
@@ -56,7 +57,7 @@ Shader "Aquatica/Seafloor"
             float _BlendDepth;
             float _NormalStrength;
             half4 _CausticColor;
-            float _CausticStrength, _CausticSize, _CausticSpeed, _CausticFadeDepth;
+            float _CausticStrength, _CausticSize, _CausticSpeed, _CausticFullDepth, _CausticFadeDepth;
         CBUFFER_END
 
         // Set globally by UnderwaterWorld
@@ -227,7 +228,8 @@ Shader "Aquatica/Seafloor"
                 Light light = GetMainLight(TransformWorldToShadowCoord(positionWS));
                 float NdotL = saturate(dot(normalWS, light.direction));
                 float depth = max(_AquaticaSurfaceHeight - positionWS.y, 0.0);
-                float causticFade = saturate(1.0 - depth / _CausticFadeDepth);
+                // Soft threshold: full strength on high ground, fading out towards the deep floor
+                float causticFade = 1.0 - smoothstep(_CausticFullDepth, _CausticFadeDepth, depth);
 
                 // Project along the light so caustics shift with slope like real ones
                 float2 causticUV = (xz - light.direction.xz / max(light.direction.y, 0.2) * positionWS.y * 0.15) / _CausticSize;

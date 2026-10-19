@@ -1,0 +1,41 @@
+fileFormatVersion: 2
+guid: e45bf1ba6b9963e43a73fd92a43fabf7
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: 715df9372183c47e389bb6e19fbc3b52, type: 3}
+  editorImportSettings:
+    generateSecondaryUVSet: 0
+  importSettings:
+    nodeNameMethod: 1
+    animationMethod: 2
+    generateMipMaps: 1
+    texturesReadable: 0
+    defaultMinFilterMode: 9729
+    defaultMagFilterMode: 9729
+    anisotropicFilterLevel: 2
+  instantiationSettings:
+    mask: -1
+    layer: 0
+    skinUpdateWhenOffscreen: 0
+    lightIntensityFactor: 1
+    sceneObjectCreation: 2
+  assetDependencies:
+  - type: 0
+    originalUri: Assets\Aquatica\Prefabs\Fish_Pack_30_-_Coral_Bay\Models\Discus04.bin
+    assetPath: Assets\Aquatica\Prefabs\Fish_Pack_30_-_Coral_Bay\Models\Discus04.bin
+  - type: 1
+    originalUri: Assets\Aquatica\Prefabs\Fish_Pack_30_-_Coral_Bay\images\Discus_HeckelCross_A.png_rgba.png
+    assetPath: Assets\Aquatica\Prefabs\Fish_Pack_30_-_Coral_Bay\images\Discus_HeckelCross_A.png_rgba.png
+  - type: 1
+    originalUri: Assets\Aquatica\Prefabs\Fish_Pack_30_-_Coral_Bay\images\Discus_HeckelCross_N.jpg
+    assetPath: Assets\Aquatica\Prefabs\Fish_Pack_30_-_Coral_Bay\images\Discus_HeckelCross_N.jpg
+  reportItems:
+  - type: 2
+    code: 20
+    messages:
+    - KHR_materials_specular
