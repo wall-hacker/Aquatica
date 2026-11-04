@@ -7,10 +7,16 @@ namespace Aquatica.Cockpit
     /// Radar monitor with a row of status lights above the screen and a push button under each light.
     /// Fault: the screen garbles and the lights turn red; the player re-calibrates it by pressing the
     /// buttons in the order shown (the light above the next button blinks amber). A wrong press restarts the sequence.
+    /// Contacts (<see cref="SetContacts"/>) are drawn as blips that light up when the sweep passes them; a faulty
+    /// radar shows none.
     /// </summary>
     public class RadarConsole : CockpitDevice
     {
         static readonly int FaultId = Shader.PropertyToID("_Fault");
+        static readonly int ContactsId = Shader.PropertyToID("_Contacts");
+
+        /// <summary>Most contacts the screen draws.</summary>
+        public const int MaxContacts = 8;
 
         [SerializeField] Renderer screen;
         [SerializeField] IndicatorLight[] statusLights;
@@ -25,6 +31,7 @@ namespace Aquatica.Cockpit
         int progress;
         float fault;
         Material screenMaterial;
+        readonly Vector4[] contacts = new Vector4[MaxContacts];
 
         void Awake()
         {
@@ -44,6 +51,17 @@ namespace Aquatica.Cockpit
         {
             fault = Mathf.MoveTowards(fault, IsFaulty ? 1f : 0f, screenFadeSpeed * Time.deltaTime);
             screenMaterial.SetFloat(FaultId, fault);
+            screenMaterial.SetVectorArray(ContactsId, contacts);
+        }
+
+        /// <summary>
+        /// Blips to draw: xy = position on the screen (-1..1, heading up, starboard right; the rings are at 0.3,
+        /// 0.6 and 0.9), z = kind (0 = none, 1 = contact, 2 = beacon), w = brightness. Extra entries are ignored.
+        /// </summary>
+        public void SetContacts(Vector4[] values, int count)
+        {
+            for (int i = 0; i < MaxContacts; i++)
+                contacts[i] = i < count && !IsFaulty ? values[i] : Vector4.zero;
         }
 
         protected override void OnFaultBegan()

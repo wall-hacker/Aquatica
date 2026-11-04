@@ -1,5 +1,7 @@
 // Round green radar display: range rings, crosshair, a clockwise sweep with a fading trail and blips that
-// light up as the sweep passes them. _Fault (0-1) tears the image, adds static and flickers it red.
+// light up as the sweep passes them. _Contacts (set by RadarConsole) are the blips: xy = position (-1..1),
+// z = kind (1 = contact dot, 2 = beacon: a pulsing diamond, always visible), w = brightness.
+// _Fault (0-1) tears the image, adds static and flickers it red.
 Shader "Aquatica/RadarScreen"
 {
     Properties
@@ -33,6 +35,8 @@ Shader "Aquatica/RadarScreen"
                 half4 _FaultColor;
                 float _Fault;
             CBUFFER_END
+
+            float4 _Contacts[8];
 
             struct Attributes
             {
@@ -88,12 +92,25 @@ Shader "Aquatica/RadarScreen"
                 float beam = Line(behind * r * TAU, 0.006) * step(r, 0.9);
 
                 float blips = 0.0;
-                [unroll] for (int i = 0; i < 6; i++)
+                [unroll] for (int i = 0; i < 8; i++)
                 {
-                    float2 h = float2(Hash(float2(i, 3.1)), Hash(float2(7.7, i)));
-                    float2 pos = (float2(cos(h.x * TAU), sin(h.x * TAU)) * (0.2 + 0.65 * h.y));
-                    float age = frac((atan2(pos.y, pos.x) - sweep) / TAU);
-                    blips += (1.0 - smoothstep(0.018, 0.04, length(p - pos))) * exp(-age * 3.5);
+                    float4 c = _Contacts[i];
+                    if (c.z < 0.5)
+                        continue;
+                    float2 d = p - c.xy;
+                    if (c.z < 1.5)
+                    {
+                        // Contact: a dot lit by the sweep, fading until it comes round again (never quite gone)
+                        float age = frac((atan2(c.y, c.x) - sweep) / TAU);
+                        blips += (1.0 - smoothstep(0.022, 0.045, length(d))) * (0.25 + 0.75 * exp(-age * 3.0)) * c.w;
+                    }
+                    else
+                    {
+                        // Beacon: a hollow diamond that pulses on its own
+                        float diamond = abs(d.x) + abs(d.y);
+                        float pulse = 0.6 + 0.4 * sin(t * 3.0);
+                        blips += Line(abs(diamond - 0.05), 0.006) * pulse * c.w * 1.2;
+                    }
                 }
 
                 float rim = Line(abs(r - 0.93), 0.008);

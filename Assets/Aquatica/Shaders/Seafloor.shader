@@ -80,6 +80,7 @@ Shader "Aquatica/Seafloor"
             #pragma multi_compile_fog
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+            #include "AquaticaGlow.hlsl"
 
             TEXTURE2D(_SandMap);   SAMPLER(sampler_SandMap);
             TEXTURE2D(_SandNormal);
@@ -239,7 +240,7 @@ Shader "Aquatica/Seafloor"
 
                 half occlusion = m.a;
                 half3 direct = light.color * (light.shadowAttenuation * light.distanceAttenuation) * NdotL;
-                half3 color = albedo * (direct * (0.45 + causticLight) + SampleSH(normalWS) * occlusion);
+                half3 color = albedo * (direct * (0.45 + causticLight) + SampleSH(normalWS) * occlusion + AquaticaGlow(positionWS, normalWS));
 
                 color = MixFog(color, input.fogFactor);
                 return half4(color, 1);

@@ -105,6 +105,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Aquatica.Underwater.Seabed.SeabedPiece
   kind: 0
   fieldType: SeagrassGreen
-  ground: 3
+  ground: -1
   size: {x: 1.2, y: 2.4}
   blocksSubmarine: 0

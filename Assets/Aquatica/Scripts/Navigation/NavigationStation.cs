@@ -10,6 +10,7 @@ namespace Aquatica.Navigation
     /// <see cref="SubmarineMotor"/> towards wherever the player is looking. Navigation mode switches itself off
     /// when the player walks out of the zone or turns away from the dome for a moment.
     /// The upper monitor shows depth and heading, and warns when the currents at the edge of the area push back.
+    /// An <see cref="Overlay"/> can take over either screen and the console tap.
     /// </summary>
     public class NavigationStation : MonoBehaviour
     {
@@ -46,6 +47,9 @@ namespace Aquatica.Navigation
 
         public bool NavigationActive => state == State.Active;
 
+        /// <summary>Gets the first say on what the screens show and what a console tap does.</summary>
+        public IStationOverlay Overlay { get; set; }
+
         void Awake() => console.Tapped += OnConsoleTapped;
 
         void OnDestroy()
@@ -70,7 +74,8 @@ namespace Aquatica.Navigation
             outsideTime = inZone ? 0f : outsideTime + Time.deltaTime;
 
             float offBow = Vector3.Angle(Flat(view.forward), Flat(motor.transform.forward));
-            lookAwayTime = offBow > lookAwayAngle ? lookAwayTime + Time.deltaTime : 0f;
+            // Anchored (e.g. the magnet is down and the phone points at the floor): looking away doesn't count
+            lookAwayTime = offBow > lookAwayAngle && !motor.Anchored ? lookAwayTime + Time.deltaTime : 0f;
 
             switch (state)
             {
@@ -102,6 +107,11 @@ namespace Aquatica.Navigation
 
         void OnConsoleTapped(CockpitScreen _)
         {
+            if (Overlay != null && Overlay.ConsoleTapped())
+            {
+                redrawTimer = 0f;
+                return;
+            }
             if (state == State.Prompt)
                 SetState(State.Active);
             else if (state == State.Active)
@@ -135,6 +145,8 @@ namespace Aquatica.Navigation
         void DrawConsole()
         {
             var s = console;
+            if (Overlay != null && Overlay.DrawConsole(s))
+                return;
             int cx = s.Width / 2;
             s.Begin();
             switch (state)
@@ -203,14 +215,19 @@ namespace Aquatica.Navigation
                     lastPush = motor.CurrentPush;
                 DrawCurrentWarning(s);
             }
-            else
+            else if (Overlay == null || !Overlay.DrawMonitor(s))
             {
                 s.SetColor(null);
                 s.Text("DSRV AQUATICA", cx, 5, TextAlign.Center, 1, 0.8f);
                 s.Rule(16);
                 s.Text($"DEPTH {motor.DepthBelowSurface(viewCamera.transform.position):0.0} M", 6, 24, TextAlign.Left, 1, 0.85f);
                 s.Text($"HDG   {Mathf.RoundToInt(motor.Bearing) % 360:000}", 6, 35, TextAlign.Left, 1, 0.85f);
-                s.Text(state == State.Active ? "HELM: PILOT" : "HELM: IDLE", 6, 46, TextAlign.Left, 1, 0.6f);
+                var lines = Overlay?.StatusLines;
+                if (lines == null)
+                    s.Text(state == State.Active ? "HELM: PILOT" : "HELM: IDLE", 6, 46, TextAlign.Left, 1, 0.6f);
+                else
+                    for (int i = 0; i < lines.Length; i++)
+                        s.Text(lines[i], 6, 46 + i * 11, TextAlign.Left, 1, 0.75f);
                 s.End("Status");
             }
         }

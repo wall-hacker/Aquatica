@@ -100,7 +100,8 @@ namespace Aquatica.Underwater
             transform.SetPositionAndRotation(target - rotation * anchorPosition, rotation);
         }
 
-        void Generate()
+        /// <summary>Builds the seafloor, arches and surface (called by <see cref="Enter"/>; editor previews call it directly).</summary>
+        public void Generate()
         {
             // Seafloor centred under the cockpit, in this root's space, built as tiles so only visible ones draw
             var anchorLocal = transform.InverseTransformPoint(cockpitAnchor.position);

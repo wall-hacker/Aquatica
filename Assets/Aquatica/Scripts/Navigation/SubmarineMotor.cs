@@ -38,6 +38,8 @@ namespace Aquatica.Navigation
         [SerializeField] float accelerationTime = 1.8f;
         [Tooltip("Time constant (s) of the hull coasting to a stop without thrust.")]
         [SerializeField] float coastTime = 2.8f;
+        [Tooltip("Time to brake to a stop while anchored (s).")]
+        [SerializeField] float anchorBrakeTime = 0.7f;
         [Tooltip("Time constant (s) of climbing/diving catching up with the look direction (and settling when level).")]
         [SerializeField] float verticalResponseTime = 0.9f;
 
@@ -113,6 +115,9 @@ namespace Aquatica.Navigation
         /// <summary>Thrust lever held.</summary>
         public bool Throttle { get; set; }
 
+        /// <summary>Holds station (e.g. while the magnet is down): the engine is cut and the hull brakes to a stop.</summary>
+        public bool Anchored { get; set; }
+
         /// <summary>World direction to travel in while the throttle is held.</summary>
         public Vector3 Heading { get; set; }
 
@@ -135,6 +140,20 @@ namespace Aquatica.Navigation
 
         /// <summary>Radius (m) around the world centre the submarine may roam.</summary>
         public float AreaRadius => areaRadius;
+
+        /// <summary>Highest the submarine's origin goes (world y) before the surface current starts pushing it down.</summary>
+        public float CruiseCeiling
+        {
+            get
+            {
+                // Also answers before the motor has started (e.g. for editor previews)
+                var w = world != null ? world : GetComponentInParent<UnderwaterWorld>();
+                if (w == null)
+                    return float.MaxValue;
+                var hull = ready ? hullBounds : MeasureHull();
+                return w.SurfaceHeight - surfaceClearance - hull.max.y - topCurrentZone;
+            }
+        }
 
         /// <summary>
         /// Signed distance (m) from a point to the hull's box inflated by a margin (negative = inside), and the
@@ -248,15 +267,16 @@ namespace Aquatica.Navigation
 
         void UpdateEngine(float dt)
         {
-            float rate = Throttle ? 1f / Mathf.Max(0.01f, spoolUpTime) : 1f / Mathf.Max(0.01f, spoolDownTime);
-            spool = Mathf.MoveTowards(spool, Throttle ? 1f : 0f, rate * dt);
+            bool thrust = Throttle && !Anchored;
+            float rate = thrust ? 1f / Mathf.Max(0.01f, spoolUpTime) : 1f / Mathf.Max(0.01f, spoolDownTime);
+            spool = Mathf.MoveTowards(spool, thrust ? 1f : 0f, rate * dt);
         }
 
         void UpdateSteering(float dt)
         {
             float targetRate = 0f;
             var flat = Vector3.ProjectOnPlane(Heading, Vector3.up);
-            if (spool > 0f && flat.sqrMagnitude > 1e-4f)
+            if (spool > 0f && !Anchored && flat.sqrMagnitude > 1e-4f)
             {
                 var bow = Quaternion.Euler(0f, yaw, 0f) * Vector3.forward;
                 float error = Vector3.SignedAngle(bow, flat, Vector3.up);
@@ -268,7 +288,7 @@ namespace Aquatica.Navigation
         void UpdateVelocity(float dt)
         {
             var target = Vector3.zero;
-            if (spool > 0f && Heading.sqrMagnitude > 1e-4f)
+            if (spool > 0f && !Anchored && Heading.sqrMagnitude > 1e-4f)
             {
                 var dir = Heading.normalized;
                 var flat = Vector3.ProjectOnPlane(dir, Vector3.up);
@@ -285,7 +305,7 @@ namespace Aquatica.Navigation
             // Horizontal: heavy, slow to build up and to coast out. Vertical (ballast and planes): quicker.
             var flatVelocity = new Vector3(velocity.x, 0f, velocity.z);
             var flatTarget = new Vector3(target.x, 0f, target.z);
-            float time = flatTarget.sqrMagnitude > flatVelocity.sqrMagnitude ? accelerationTime : coastTime;
+            float time = Anchored ? anchorBrakeTime : flatTarget.sqrMagnitude > flatVelocity.sqrMagnitude ? accelerationTime : coastTime;
             flatVelocity = Vector3.Lerp(flatVelocity, flatTarget, Response(dt, time));
             float vertical = Mathf.Lerp(velocity.y, target.y, Response(dt, verticalResponseTime));
             velocity = new Vector3(flatVelocity.x, vertical, flatVelocity.z);

@@ -5,6 +5,9 @@
 //  - optional sway (seaweed): a slow watery sway plus a finer flutter, both growing towards the tip, and a
 //    per-instance bend (_Bend, world-space tip offset) that SeabedField drives with a spring when the submarine
 //    pushes through. Seaweed meshes are normalised to unit height, so object-space y is the bend weight.
+//  - optional glint (salvage crates): now and then a faint band of light slides diagonally across the object, like
+//    a stray ray catching metal, at irregular moments of its own (each period has only a chance of a glint, at a
+//    random point in it, with a random strength), showing through the fog a little
 // Supports GPU instancing (SeabedField draws everything with DrawMeshInstanced).
 Shader "Aquatica/Seabed"
 {
@@ -33,6 +36,15 @@ Shader "Aquatica/Seabed"
         _CausticSpeed ("Caustic Speed", Float) = 0.5
         _CausticFullDepth ("Caustics Full Strength Above Depth (m)", Float) = 60
         _CausticFadeDepth ("Caustics Vanish At Depth (m)", Float) = 82
+
+        [Header(Glint)]
+        [Toggle(_GLINT)] _UseGlint ("Glint (salvage)", Float) = 0
+        [HDR] _GlintColor ("Glint Color", Color) = (0.5, 0.65, 0.62, 1)
+        _GlintPeriod ("Glint Period (s)", Float) = 4
+        _GlintChance ("Glint Chance Per Period", Range(0, 1)) = 0.45
+        _GlintSweep ("Glint Sweep Time (s)", Float) = 1.1
+        _GlintWidth ("Glint Band Width (object units)", Range(0.02, 1)) = 0.18
+        _GlintPierce ("Glint Through Fog", Range(0, 1)) = 0.3
     }
 
     SubShader
@@ -49,6 +61,8 @@ Shader "Aquatica/Seabed"
             float _SwayAmount, _SwaySpeed, _FlutterAmount;
             half4 _CausticColor;
             float _CausticStrength, _CausticSize, _CausticSpeed, _CausticFullDepth, _CausticFadeDepth;
+            half4 _GlintColor;
+            float _GlintPeriod, _GlintChance, _GlintSweep, _GlintWidth, _GlintPierce;
         CBUFFER_END
 
         UNITY_INSTANCING_BUFFER_START(SeabedProps)
@@ -101,8 +115,10 @@ Shader "Aquatica/Seabed"
             #pragma shader_feature_local _NORMALMAP
             #pragma shader_feature_local _ALPHATEST_ON
             #pragma shader_feature_local _SWAY
+            #pragma shader_feature_local _GLINT
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+            #include "AquaticaGlow.hlsl"
 
             struct Attributes
             {
@@ -187,10 +203,28 @@ Shader "Aquatica/Seabed"
                 half3 causticLight = _CausticColor.rgb * caustic * _CausticStrength * causticFade * saturate(normalWS.y);
 
                 half3 direct = light.color * (light.shadowAttenuation * light.distanceAttenuation) * NdotL;
-                half3 color = albedo * (direct * (0.45 + causticLight) + SampleSH(normalWS));
-
+                half3 color = albedo * (direct * (0.45 + causticLight) + SampleSH(normalWS) + AquaticaGlow(positionWS, normalWS));
 
                 color = MixFog(color, input.fogFactor);
+
+            #if defined(_GLINT)
+                // A band sliding diagonally across the object: per period maybe one, at a random moment and strength
+                float3 root = TransformObjectToWorld(float3(0, 0, 0));
+                float phase = frac(sin(dot(root.xz, float2(12.9898, 78.233))) * 43758.5453);
+                float cycles = _Time.y / _GlintPeriod + phase;
+                float roll = frac(sin(floor(cycles) * 17.31 + phase * 91.7) * 43758.5453);
+                float start = frac(roll * 7.13) * max(_GlintPeriod - _GlintSweep, 0.0);
+                float strength = 0.4 + 0.6 * frac(roll * 13.7);
+                float clock = frac(cycles) * _GlintPeriod - start;
+                float3 os = TransformWorldToObject(positionWS);
+                float diagonal = os.x + os.y * 1.3 + os.z * 0.6;
+                float band = lerp(-2.2, 2.2, clock / _GlintSweep);
+                float glint = exp(-pow((diagonal - band) / _GlintWidth, 2.0)) * step(0.0, clock) * step(clock, _GlintSweep)
+                            * step(roll, _GlintChance) * strength;
+                glint *= 0.35 + 0.65 * saturate(normalWS.y);
+                float through = lerp(ComputeFogIntensity(input.fogFactor), 1.0, _GlintPierce);
+                color += _GlintColor.rgb * glint * through;
+            #endif
                 return half4(color, 1);
             }
             ENDHLSL

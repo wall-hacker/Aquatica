@@ -1154,6 +1154,7 @@ Transform:
   m_Children:
   - {fileID: 103798801514833001}
   - {fileID: 398640199692915569}
+  - {fileID: 1219026216307409912}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &6256387185957020304
@@ -1287,6 +1288,10 @@ MonoBehaviour:
   rockSeaweed: 0.2
   sandShells: 0.05
   rockShells: 0.015
+  crateClearRadius: 1.8
+  crateShortRadius: 4.5
+  crateGrassHeight: 0.6
+  gateShortRadius: 22
   chunkSize: 16
   invisibleBelow: 0.02
   fallbackDrawDistance: 70
@@ -2276,6 +2281,143 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &6122192856549067802
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1219026216307409912}
+  - component: {fileID: 8456165322946870627}
+  - component: {fileID: 9221128061588136435}
+  - component: {fileID: 6603516167028801843}
+  m_Layer: 0
+  m_Name: Expedition
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1219026216307409912
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6122192856549067802}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4518994887672959602}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8456165322946870627
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6122192856549067802}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa590a75a670586429c3dbfd7a036db8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Aquatica.Expedition.CrateField
+  cratePrefab: {fileID: 7044026834790147, guid: 8d659b362b1c7f54189866c4a31544d7, type: 3}
+  settings:
+    crateCount: 10
+    cratesPerBand: 020000000400000004000000
+    bands:
+    - {x: 28, y: 55}
+    - {x: 55, y: 100}
+    - {x: 95, y: 150}
+    edgeMargin: 35
+    minSpacing: 35
+    candidates: 48
+    scanStep: 3
+    elevationTiers: {x: 3, y: 4, z: 3}
+    tierQuantiles: {x: 0.1, y: 0.9}
+    tierPull: 3
+    maxSlope: 22
+    maxRock: 0.7
+    magnetClearance: {x: 3.5, y: 2}
+    hoverClearance: {x: 8, y: 12}
+    archClearance: {x: 6, y: 36}
+    burialRange: {x: 0.25, y: 0.65}
+    tiltNoise: 7
+    scaleRange: {x: 1, y: 1.25}
+    lidMargin: 0.1
+    floatTolerance: 0.12
+    gateBand: {x: 115, y: 150}
+    gateClearRadius: 30
+    gateFlatness: {x: 10, y: 4}
+  motor: {fileID: 0}
+--- !u!114 &9221128061588136435
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6122192856549067802}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d74a6041c209db84f8bc7a80565f1d9b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Aquatica.Expedition.MagnetRig
+  motor: {fileID: 4063649671018478372}
+  crtShader: {fileID: 4800000, guid: 79ca3925188d27646a71d15f62011a09, type: 3}
+  cableMaterial: {fileID: 2100000, guid: 1077aac582e4f874fbcebe1a8ba90f9d, type: 2}
+  siltMaterial: {fileID: 2100000, guid: 0c8af72c405ac364d97ad5c4ceff41d1, type: 2}
+  engageRadius: 5
+  dropRange: {x: 6, y: 16}
+  engageSpeed: 0.8
+  restoring: 0.9
+  damping: 0.7
+  currentPush: 1.6
+  currentFrequency: 0.3
+  tiltPush: 7
+  invertTilt: 0
+  maxSwing: 6
+  ringSize: {x: 0.16, y: 0.055}
+  ringRates: {x: 0.012, y: 0.04}
+  minTolerance: 0.22
+  snapDistance: 1.5
+  lowerSpeed: 0.9
+  maxDropTime: 22
+  windBackSpeed: 0.5
+  recoverSpeed: 3
+  easeAfter: 25
+  autoAfter: 60
+  cameraFov: 62
+  feedScale: 0.5
+--- !u!114 &6603516167028801843
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6122192856549067802}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67c2ad4d1cd68834084a4720c8bb3ec6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Aquatica.Expedition.ExpeditionDirector
+  crateField: {fileID: 8456165322946870627}
+  magnet: {fileID: 9221128061588136435}
+  gatewayPrefab: {fileID: 9099049453370146143, guid: cd757a6c22790354fba583dddd4455a6, type: 3}
+  crtShader: {fileID: 4800000, guid: 79ca3925188d27646a71d15f62011a09, type: 3}
+  radarRange: 150
+  radarCrates: 3
+  sweepSpeed: 1.6
+  pingVolume: 0.35
+  crystalFallbackAfter: 660
+  radarFaultAfterCrate: 5
+  radarFaultDelay: 15
+  gateOpenDistance: 45
 --- !u!1 &6455953087477024422
 GameObject:
   m_ObjectHideFlags: 0
@@ -3335,6 +3477,7 @@ MonoBehaviour:
   spoolDownTime: 0.8
   accelerationTime: 1.8
   coastTime: 2.8
+  anchorBrakeTime: 0.7
   verticalResponseTime: 0.9
   maxTurnRate: 18
   fullTurnAngle: 50

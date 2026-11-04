@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Aquatica.Expedition;
 using Aquatica.Navigation;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -56,6 +57,15 @@ namespace Aquatica.Underwater.Seabed
         [Header("Shells")]
         [SerializeField] float sandShells = 0.05f;
         [SerializeField] float rockShells = 0.015f;
+
+        [Header("Around the expedition's crates")]
+        [Tooltip("Nothing grows or lies within this distance (m) of a crate.")]
+        [SerializeField] float crateClearRadius = 1.8f;
+        [Tooltip("Only seaweed up to crateGrassHeight (m) grows within this distance (m), so crates stay visible.")]
+        [SerializeField] float crateShortRadius = 4.5f;
+        [SerializeField] float crateGrassHeight = 0.6f;
+        [Tooltip("Only short seaweed grows within this distance (m) of the exit gateway, so the way through stays open.")]
+        [SerializeField] float gateShortRadius = 22f;
 
         [Header("Rendering")]
         [SerializeField] float chunkSize = 16f;
@@ -137,6 +147,8 @@ namespace Aquatica.Underwater.Seabed
         Vector3[] instanceBend;
         int terrainLayer;
         int seed;
+        readonly List<Vector2> crateSpots = new();
+        Vector2? gateSpot;
         float colliderTimer;
         bool ready;
 
@@ -182,6 +194,10 @@ namespace Aquatica.Underwater.Seabed
                 motor = world.GetComponentInChildren<SubmarineMotor>();
             if (motor == null || !motor.IsReady)
                 return false;
+            var crateField = world.GetComponentInChildren<CrateField>();
+            ExpeditionLayout expedition = null;
+            if (crateField != null && !crateField.TryGetLayout(out expedition))
+                return false;
             if (viewer == null)
                 viewer = Camera.main;
             if (viewer == null)
@@ -192,6 +208,13 @@ namespace Aquatica.Underwater.Seabed
             colliderRoot = new GameObject("SeabedColliders").transform;
             colliderRoot.SetParent(world.transform, false);
             seed = world.Seed;
+            if (expedition != null)
+            {
+                foreach (var c in expedition.Crates)
+                    crateSpots.Add(new Vector2(c.position.x, c.position.z));
+                if (expedition.HasGate)
+                    gateSpot = new Vector2(expedition.GatePosition.x, expedition.GatePosition.z);
+            }
             BuildProtos();
             Generate();
             ready = true;
@@ -424,6 +447,8 @@ namespace Aquatica.Underwater.Seabed
             float scale = piece.Sways ? size : size / Mathf.Max(0.01f, proto.maxExtent);
             float height = proto.bounds.size.y * scale;
             float radius = Mathf.Max(proto.bounds.size.x, proto.bounds.size.z) * scale * 0.5f;
+            if (HidesCrate(at, height, radius))
+                return;
 
             // Shells lie along the ground; seaweed stands nearly upright
             var floorTransform = world.SeafloorTransform;
@@ -456,6 +481,19 @@ namespace Aquatica.Underwater.Seabed
             if (!chunks.TryGetValue(chunk, out var members))
                 chunks[chunk] = members = new List<int>();
             members.Add(index);
+        }
+
+        bool HidesCrate(Vector2 at, float height, float radius)
+        {
+            if (gateSpot.HasValue && height > crateGrassHeight && Vector2.Distance(at, gateSpot.Value) < gateShortRadius)
+                return true;
+            foreach (var spot in crateSpots)
+            {
+                float d = Vector2.Distance(at, spot) - radius;
+                if (d < crateClearRadius || (d < crateShortRadius && height > crateGrassHeight))
+                    return true;
+            }
+            return false;
         }
 
         Vector2Int ChunkOf(Vector3 position) =>

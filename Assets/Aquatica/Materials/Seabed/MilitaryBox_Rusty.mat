@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: MilitaryBox_Rusty
+  m_Shader: {fileID: 4800000, guid: b3323396259539d4b903bb815eaab33a, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords:
+  - _GLINT
+  - _NORMALMAP
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 1
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 2800000, guid: bfe1af680c7c1bc45a3ed708aa12ab2b, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BumpMap:
+        m_Texture: {fileID: 2800000, guid: d12f475aac54795498c827fa070a9f59, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AlphaClip: 0
+    - _BumpScale: 1
+    - _CausticFadeDepth: 82
+    - _CausticFullDepth: 60
+    - _CausticSize: 12
+    - _CausticSpeed: 0.5
+    - _CausticStrength: 2.4
+    - _Cull: 2
+    - _Cutoff: 0.5
+    - _FlutterAmount: 0.04
+    - _GlintChance: 0.45
+    - _GlintPeriod: 4
+    - _GlintPierce: 0.3
+    - _GlintSweep: 1.1
+    - _GlintWidth: 0.18
+    - _SwayAmount: 0.1
+    - _SwaySpeed: 0.9
+    - _UseGlint: 1
+    - _UseNormalMap: 1
+    - _UseSway: 0
+    - _Wrap: 0
+    m_Colors:
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _CausticColor: {r: 0.65, g: 0.95, b: 1, a: 1}
+    - _GlintColor: {r: 0.5, g: 0.65, b: 0.62, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
