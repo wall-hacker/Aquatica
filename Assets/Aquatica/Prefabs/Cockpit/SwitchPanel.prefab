@@ -449,6 +449,8 @@ MonoBehaviour:
   state: 1
   intensity: 2.2
   blinkRate: 2.5
+  castLights: []
+  castIntensity: 1
 --- !u!1 &1258757640393740090
 GameObject:
   m_ObjectHideFlags: 0
@@ -1366,6 +1368,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Aquatica.Cockpit.SwitchPanel
   displayName: Power distribution
+  screenLabel: POWER GRID
   switches:
   - {fileID: 235368985548262369}
   - {fileID: 4902020761055871157}
@@ -1375,7 +1378,17 @@ MonoBehaviour:
   - {fileID: 2647382733139571574}
   - {fileID: 6722165220366022886}
   - {fileID: 680998401389230691}
-  wrongSwitches: {x: 2, y: 4}
+  wrongCounts:
+  - {x: 2, y: 3}
+  - {x: 3, y: 4}
+  - {x: 4, y: 5}
+  kickbackBudget: 010000000200000003000000
+  kickbackChance:
+  - 0.35
+  - 0.45
+  - 0.55
+  kickbackDelay: 0.35
+  kickbackVolume: 0.4
 --- !u!1 &2742470555174870729
 GameObject:
   m_ObjectHideFlags: 0
@@ -2740,6 +2753,8 @@ MonoBehaviour:
   state: 1
   intensity: 2.2
   blinkRate: 2.5
+  castLights: []
+  castIntensity: 1
 --- !u!1 &4567100772000421785
 GameObject:
   m_ObjectHideFlags: 0
@@ -3343,6 +3358,8 @@ MonoBehaviour:
   state: 1
   intensity: 2.2
   blinkRate: 2.5
+  castLights: []
+  castIntensity: 1
 --- !u!1 &5192376568622423662
 GameObject:
   m_ObjectHideFlags: 0
@@ -3449,6 +3466,8 @@ MonoBehaviour:
   state: 1
   intensity: 2.2
   blinkRate: 2.5
+  castLights: []
+  castIntensity: 1
 --- !u!1 &5271988916026406850
 GameObject:
   m_ObjectHideFlags: 0
@@ -3825,6 +3844,8 @@ MonoBehaviour:
   state: 1
   intensity: 2.2
   blinkRate: 2.5
+  castLights: []
+  castIntensity: 1
 --- !u!1 &5921262114454798884
 GameObject:
   m_ObjectHideFlags: 0
@@ -4863,6 +4884,8 @@ MonoBehaviour:
   state: 1
   intensity: 2.2
   blinkRate: 2.5
+  castLights: []
+  castIntensity: 1
 --- !u!1 &7296786126786906586
 GameObject:
   m_ObjectHideFlags: 0
@@ -5327,6 +5350,8 @@ MonoBehaviour:
   state: 1
   intensity: 2.2
   blinkRate: 2.5
+  castLights: []
+  castIntensity: 1
 --- !u!1 &8117678081452425455
 GameObject:
   m_ObjectHideFlags: 0
@@ -5613,6 +5638,8 @@ MonoBehaviour:
   state: 1
   intensity: 2.2
   blinkRate: 2.5
+  castLights: []
+  castIntensity: 1
 --- !u!1 &8806031588732927301
 GameObject:
   m_ObjectHideFlags: 0

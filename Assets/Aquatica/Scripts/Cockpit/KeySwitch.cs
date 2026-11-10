@@ -4,9 +4,11 @@ using UnityEngine;
 namespace Aquatica.Cockpit
 {
     /// <summary>
-    /// Rotary key switch under a flip-up safety cover. Tap the cover to open/close it; with the cover
+    /// Rotary key switch under a hinged safety cover. Tap the cover to open/close it; with the cover
     /// open, press the key to turn it. The key springs back shortly after it is released, so turning
     /// two of them "at once" means holding both together (or turning the second quickly enough).
+    /// While <see cref="CoverLocked"/> is set the cover stays shut. The cover swings around its local X axis from
+    /// whatever rotation it has in the prefab (so it can hinge at the top or, turned over, at the bottom).
     /// </summary>
     public class KeySwitch : MonoBehaviour
     {
@@ -28,18 +30,40 @@ namespace Aquatica.Cockpit
         public bool IsKeyTurned { get; private set; }
         public IndicatorLight Indicator => indicator;
 
+        /// <summary>The cover can't be opened (and closes if it is open).</summary>
+        public bool CoverLocked
+        {
+            get => coverLocked;
+            set
+            {
+                coverLocked = value;
+                if (value)
+                    SetCoverOpen(false);
+            }
+        }
+
+        /// <summary>Seconds the key stays turned after it is released.</summary>
+        public float SpringBackDelay
+        {
+            get => springBackDelay;
+            set => springBackDelay = Mathf.Max(0f, value);
+        }
+
         bool keyHeld;
+        bool coverLocked;
         float releaseTime;
+        Quaternion coverClosed;
 
         void Awake()
         {
             keyCollider.enabled = false;
+            coverClosed = cover.localRotation;
         }
 
         void Update()
         {
             float t = 1f - Mathf.Exp(-speed * Time.deltaTime);
-            cover.localRotation = Quaternion.Slerp(cover.localRotation, Quaternion.Euler(IsCoverOpen ? coverOpenAngle : 0f, 0f, 0f), t);
+            cover.localRotation = Quaternion.Slerp(cover.localRotation, coverClosed * Quaternion.Euler(IsCoverOpen ? coverOpenAngle : 0f, 0f, 0f), t);
             key.localRotation = Quaternion.Slerp(key.localRotation, Quaternion.Euler(0f, 0f, IsKeyTurned ? keyTurnAngle : 0f), t);
 
             if (IsKeyTurned && !keyHeld && Time.time - releaseTime > springBackDelay)
@@ -48,12 +72,15 @@ namespace Aquatica.Cockpit
 
         public void SetCoverOpen(bool open)
         {
-            if (IsCoverOpen == open)
+            if (IsCoverOpen == open || (open && coverLocked))
                 return;
             IsCoverOpen = open;
             keyCollider.enabled = open;
             if (!open)
+            {
+                keyHeld = false;
                 SetKey(false);
+            }
             CoverChanged?.Invoke(this);
         }
 

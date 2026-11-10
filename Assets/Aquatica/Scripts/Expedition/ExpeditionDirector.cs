@@ -32,9 +32,6 @@ namespace Aquatica.Expedition
         [Header("Pacing")]
         [Tooltip("After this long (s) without all crystals, the next crate holds one.")]
         [SerializeField] float crystalFallbackAfter = 660f;
-        [Tooltip("The radar breaks down once, this many seconds after the given crate is scanned.")]
-        [SerializeField] int radarFaultAfterCrate = 5;
-        [SerializeField] float radarFaultDelay = 15f;
         [Tooltip("With all crystals aboard, the gateway opens when the submarine comes this close (m).")]
         [SerializeField] float gateOpenDistance = 45f;
 
@@ -44,6 +41,23 @@ namespace Aquatica.Expedition
         public bool MagnetBusy => magnet != null && magnet.Busy;
         public Crate NearestCrate { get; private set; }
         public float NearestCrateDistance { get; private set; }
+        public bool Started => started;
+        public bool Ended => ended;
+        /// <summary>Crates brought up so far.</summary>
+        public int Recovered => recovered;
+        /// <summary>The monitor is scanning a crate or showing a log.</summary>
+        public bool Reading => screens != null && screens.Reading;
+        public bool GateOpened => gateway != null && (gateway.IsOpen || gateway.IsOpening);
+        public UnderwaterWorld World => world;
+
+        /// <summary>Raised when a crate has been brought up (before it is scanned).</summary>
+        public event System.Action<int> CrateRecovered;
+        /// <summary>Raised when the gateway starts opening (all crystals aboard, submarine close).</summary>
+        public event System.Action GateOpening;
+        /// <summary>Raised when the submarine passes the gateway and the dive ends.</summary>
+        public event System.Action DiveEnded;
+        /// <summary>Raised when the dive is lost (the cabin flooded).</summary>
+        public event System.Action DiveFailed;
 
         UnderwaterWorld world;
         SubmarineMotor motor;
@@ -56,8 +70,6 @@ namespace Aquatica.Expedition
         float startTime;
         int recovered;
         int crystalsGiven, logsGiven, artifactsGiven;
-        float radarFaultAt = -1f;
-        bool radarFaultDone;
         readonly Vector4[] contacts = new Vector4[RadarConsole.MaxContacts];
         readonly System.Collections.Generic.List<Crate> sorted = new();
         float lastSweepBehind;
@@ -71,7 +83,6 @@ namespace Aquatica.Expedition
             TrackCrates();
             UpdateRadar();
             UpdateGateway();
-            UpdateRadarFault();
         }
 
         bool TryStart()
@@ -156,6 +167,7 @@ namespace Aquatica.Expedition
                 content.text += " ALL THREE ABOARD. THE GATE IS ANSWERING: FOLLOW THE BEACON.";
             Play(Tones.Blip);
             screens.ShowCrate(content, header, () => Reveal(content));
+            CrateRecovered?.Invoke(recovered);
         }
 
         void Reveal(CrateContent content)
@@ -177,8 +189,6 @@ namespace Aquatica.Expedition
                     Play(Tones.Reveal);
                     break;
             }
-            if (recovered == radarFaultAfterCrate && !radarFaultDone)
-                radarFaultAt = Time.time + radarFaultDelay;
         }
 
         /// <summary>What the crate just recovered holds (see the class summary).</summary>
@@ -260,15 +270,6 @@ namespace Aquatica.Expedition
             return new Vector4(p.x, p.y, kind, brightness);
         }
 
-        void UpdateRadarFault()
-        {
-            if (radarFaultAt < 0f || radarFaultDone || Time.time < radarFaultAt || MagnetBusy || screens.Reading)
-                return;
-            radarFaultDone = true;
-            if (radar != null)
-                radar.BeginFault();
-        }
-
         // ---------------------------------------------------------------- gateway and the end
 
         void UpdateGateway()
@@ -283,6 +284,7 @@ namespace Aquatica.Expedition
             var (title, text) = ExpeditionStory.FinalLog;
             screens.ShowText(new CrateContent { kind = CrateContentKind.Log, index = ExpeditionStory.Logs.Length, title = title, text = text },
                 $"LOG {Logs}/{ExpeditionStory.TotalLogs}");
+            GateOpening?.Invoke();
         }
 
         void OnGatewayCrossed()
@@ -294,6 +296,39 @@ namespace Aquatica.Expedition
             if (interactor != null)
                 interactor.enabled = false;
             ExpeditionEnding.Play(crtShader, Logs, Artifacts, Time.time - startTime);
+            DiveEnded?.Invoke();
+        }
+
+        /// <summary>Testing: the nearest crate counts as brought up, as if the magnet had lifted it.</summary>
+        [ContextMenu("Debug: recover nearest crate")]
+        public void DebugRecoverNearestCrate()
+        {
+            if (!started || ended || NearestCrate == null || MagnetBusy)
+                return;
+            var crate = NearestCrate;
+            crate.MarkCaptured();
+            crate.gameObject.SetActive(false);
+            NearestCrate = null;
+            OnCaptured(crate);
+        }
+
+        /// <summary>The dive is lost (the player drowned): everything stops and the failure card plays.</summary>
+        public void Fail()
+        {
+            if (!started || ended)
+                return;
+            ended = true;
+            motor.Anchored = true;
+            motor.Throttle = false;
+            radar?.SetContacts(contacts, 0);
+            var interactor = FindAnyObjectByType<CockpitInteractor>();
+            if (interactor != null)
+                interactor.enabled = false;
+            DiveFailed?.Invoke();
+            int total = 0;
+            foreach (var _ in crateField.Crates)
+                total++;
+            ExpeditionEnding.PlayFailure(crtShader, recovered, total, Crystals, Time.time - startTime);
         }
 
         void Play(AudioClip clip, float volume = 0.6f)

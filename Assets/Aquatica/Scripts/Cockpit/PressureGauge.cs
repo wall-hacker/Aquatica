@@ -2,7 +2,11 @@ using UnityEngine;
 
 namespace Aquatica.Cockpit
 {
-    /// <summary>Dial gauge whose needle idles with a slight wobble and climbs into the red, shaking, while <see cref="Alarm"/> is set.</summary>
+    /// <summary>
+    /// Dial gauge. On its own, its needle idles with a slight wobble and climbs into the red, shaking, while
+    /// <see cref="Alarm"/> is set. A device can instead drive it directly with <see cref="Drive"/> (the ballast
+    /// valve shows its pressure on it), and from then on the gauge shows only that reading.
+    /// </summary>
     public class PressureGauge : MonoBehaviour
     {
         [Tooltip("Needle pivot; points up at 0 degrees and turns around its local Z axis.")]
@@ -15,6 +19,7 @@ namespace Aquatica.Cockpit
 
         float reading;
         float seed;
+        float? driven;
 
         public bool Alarm { get; set; }
         public float Reading => reading;
@@ -25,8 +30,18 @@ namespace Aquatica.Cockpit
             reading = normalReading;
         }
 
+        /// <summary>Shows this value (0-1) instead of the gauge's own idle/alarm behaviour.</summary>
+        public void Drive(float value)
+        {
+            driven = Mathf.Clamp01(value);
+            reading = driven.Value;
+            needle.localRotation = Quaternion.Euler(0f, 0f, Mathf.Lerp(zeroAngle, fullAngle, reading));
+        }
+
         void Update()
         {
+            if (driven.HasValue)
+                return;
             float t = Time.time + seed;
             float goal = Alarm
                 ? alarmReading + Mathf.Sin(t * 23f) * 0.02f + (Mathf.PerlinNoise(t * 3f, 0f) - 0.5f) * 0.1f

@@ -12,9 +12,23 @@ namespace Aquatica.Cockpit
     public abstract class CockpitDevice : MonoBehaviour
     {
         [SerializeField] string displayName = "Device";
+        [Tooltip("Short name for the cockpit screens' fault list (about 13 characters at most). Empty: the display name.")]
+        [SerializeField] string screenLabel = "";
 
         public string DisplayName => displayName;
+        public string ScreenLabel => (string.IsNullOrEmpty(screenLabel) ? displayName : screenLabel).ToUpperInvariant();
         public bool IsFaulty { get; private set; }
+
+        /// <summary>How hard the current (or last) fault is to repair: 1 = easy, 3 = hardest.</summary>
+        public int Difficulty { get; private set; } = 1;
+
+        public const int MaxDifficulty = 3;
+
+        /// <summary>
+        /// The player is working on this fault (e.g. listening to a sequence), so its klaxon should keep down
+        /// (see <see cref="FaultKlaxons"/>).
+        /// </summary>
+        public virtual bool AlarmDucked => false;
 
         /// <summary>Raised when the device breaks.</summary>
         public event Action<CockpitDevice> FaultStarted;
@@ -22,11 +36,30 @@ namespace Aquatica.Cockpit
         /// <summary>Raised when the player has finished repairing the device.</summary>
         public event Action<CockpitDevice> Repaired;
 
-        /// <summary>Breaks the device. Ignored if it is already faulty.</summary>
-        public void BeginFault()
+        /// <summary>
+        /// Where the device is in the world: the middle of its visible parts (a device split across the cabin, like
+        /// the two interlock key switches, sits between them; its own transform may be anywhere).
+        /// </summary>
+        public Vector3 Location
+        {
+            get
+            {
+                var renderers = GetComponentsInChildren<Renderer>();
+                if (renderers.Length == 0)
+                    return transform.position;
+                var sum = Vector3.zero;
+                foreach (var r in renderers)
+                    sum += r.bounds.center;
+                return sum / renderers.Length;
+            }
+        }
+
+        /// <summary>Breaks the device at the given difficulty (1-3). Ignored if it is already faulty.</summary>
+        public void BeginFault(int difficulty = 1)
         {
             if (IsFaulty)
                 return;
+            Difficulty = Mathf.Clamp(difficulty, 1, MaxDifficulty);
             IsFaulty = true;
             OnFaultBegan();
             FaultStarted?.Invoke(this);

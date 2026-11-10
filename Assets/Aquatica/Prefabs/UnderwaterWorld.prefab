@@ -267,6 +267,37 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &696684045041445131
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9117396898011418396}
+  m_Layer: 0
+  m_Name: WaterOrigin
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &9117396898011418396
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 696684045041445131}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -0.37, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1417598983238968774}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &758261696763843942
 GameObject:
   m_ObjectHideFlags: 0
@@ -699,7 +730,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 8356e888d8530554d99d21a9fcb87238, type: 2}
+  - {fileID: 2100000, guid: dc372147c6a40154199ddcad4d273221, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1213,7 +1244,10 @@ MonoBehaviour:
     minDistanceFromStart: 55
     minSpacing: 55
     footSink: 6
-    candidates: 24
+    maxFootStep: 4
+    ravineBias: 0.8
+    maxRavineSpan: 70
+    candidates: 40
     moundHeight: 0.9
     moundRadius: 2.6
   cockpitAnchor: {fileID: 2268312076924795133}
@@ -2293,6 +2327,8 @@ GameObject:
   - component: {fileID: 8456165322946870627}
   - component: {fileID: 9221128061588136435}
   - component: {fileID: 6603516167028801843}
+  - component: {fileID: 6657142387488029637}
+  - component: {fileID: 2228835850667018193}
   m_Layer: 0
   m_Name: Expedition
   m_TagString: Untagged
@@ -2415,9 +2451,85 @@ MonoBehaviour:
   sweepSpeed: 1.6
   pingVolume: 0.35
   crystalFallbackAfter: 660
-  radarFaultAfterCrate: 5
-  radarFaultDelay: 15
   gateOpenDistance: 45
+--- !u!114 &6657142387488029637
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6122192856549067802}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8090be46134f284aa639f68d6825775, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Aquatica.Expedition.FaultDirector
+  firstFault: {fileID: 579893078809277693}
+  phases:
+  - fromCrate: 0
+    interval: {x: 0, y: 0}
+    difficulty: 1
+    faults: {x: 1, y: 1}
+    floodRate: 1
+  - fromCrate: 2
+    interval: {x: 30, y: 50}
+    difficulty: 1
+    faults: {x: 1, y: 1}
+    floodRate: 1
+  - fromCrate: 3
+    interval: {x: 100, y: 150}
+    difficulty: 1
+    faults: {x: 1, y: 1}
+    floodRate: 1
+  - fromCrate: 6
+    interval: {x: 70, y: 100}
+    difficulty: 2
+    faults: {x: 1, y: 2}
+    floodRate: 1.25
+  - fromCrate: 9
+    interval: {x: 45, y: 70}
+    difficulty: 3
+    faults: {x: 2, y: 2}
+    floodRate: 1.5
+  afterGate:
+    fromCrate: 0
+    interval: {x: 35, y: 50}
+    difficulty: 3
+    faults: {x: 2, y: 2}
+    floodRate: 2
+  quietAfterPickup: 20
+  gateFaultDelay: 2.5
+  logFaults: 1
+--- !u!114 &2228835850667018193
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6122192856549067802}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08787f44906ad2a4fa4baa732b3f1b16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Aquatica.Expedition.CabinFlood
+  floorOrigin: {fileID: 9117396898011418396}
+  walls:
+  - {fileID: 8660596288709886701}
+  - {fileID: 473381252150307432}
+  waterMaterial: {fileID: 2100000, guid: b670f45d12c81ad42ac2f80a9f9c827f, type: 2}
+  riseRate: 0.022
+  drownMargin: 0.04
+  muffleRange: 0.35
+  drainRate: 0.1
+  spinUp: 0.35
+  easeOut: 0.08
+  pumpVolume: 0.25
+  valveVolume: 0.35
+  inflowVolume: 0.5
+  rays: 72
+  rings: 10
+  maxReach: 8
+  refitStep: 0.01
 --- !u!1 &6455953087477024422
 GameObject:
   m_ObjectHideFlags: 0
@@ -2465,8 +2577,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Aquatica.Cockpit.KeySwitchPair
   displayName: Reactor interlock
+  screenLabel: INTERLOCK
   first: {fileID: 6574773583379790447}
   second: {fileID: 876745126343140591}
+  springBack:
+  - 1.2
+  - 0.8
+  - 0.45
+  closeDelay: 0.9
 --- !u!1 &6489254306336690046
 GameObject:
   m_ObjectHideFlags: 0
@@ -2655,6 +2773,7 @@ MonoBehaviour:
   lever: {fileID: 5393440371522260157}
   console: {fileID: 2005092125632706712}
   monitor: {fileID: 6957959197161326898}
+  systems: {fileID: 9090593476945304872}
   zoneCenter: {x: 0, y: 1.9, z: 2.7}
   zoneSize: {x: 2.6, y: 4, z: 1.5}
   leaveGrace: 0.5
@@ -2662,6 +2781,7 @@ MonoBehaviour:
   lookAwayGrace: 1
   redrawInterval: 0.05
   warningColor: {r: 1.6, g: 0.35, b: 0.08, a: 1}
+  faultColor: {r: 2.2, g: 0.1, b: 0.06, a: 1}
 --- !u!114 &2331942209250565420
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2792,6 +2912,7 @@ GameObject:
   - component: {fileID: 9090593476945304872}
   - component: {fileID: 2235369229014049163}
   - component: {fileID: 881274733686335271}
+  - component: {fileID: 4570136109949952}
   m_Layer: 0
   m_Name: Cockpit
   m_TagString: Untagged
@@ -2819,6 +2940,7 @@ Transform:
   - {fileID: 434152591347559171}
   - {fileID: 5202669018143487520}
   - {fileID: 2016862261010461834}
+  - {fileID: 9117396898011418396}
   m_Father: {fileID: 103798801514833001}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &9090593476945304872
@@ -2866,8 +2988,26 @@ MonoBehaviour:
   fixtures:
   - {fileID: 2475732934110187668}
   - {fileID: 7315996099979947221}
-  gauges:
-  - {fileID: 5940857180584917209}
+  gauges: []
+--- !u!114 &4570136109949952
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7923186199100054149}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a559e74f6ffc3845a9cfac47eba3274, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Aquatica.Cockpit.FaultKlaxons
+  attentionVolume: 0.5
+  attentionTime: 4
+  settledVolume: 0.25
+  duckedVolume: 0.06
+  fadeSpeed: 1.5
+  minDistance: 0.6
+  maxDistance: 8
 --- !u!1 &8071601561959929391
 GameObject:
   m_ObjectHideFlags: 0
@@ -3598,6 +3738,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1417598983238968774}
     m_Modifications:
+    - target: {fileID: 3883529772334659239, guid: b62e28c0ad189f74b8bb3272607f487c, type: 3}
+      propertyPath: gauge
+      value: 
+      objectReference: {fileID: 5940857180584917209}
     - target: {fileID: 8175412908564650505, guid: b62e28c0ad189f74b8bb3272607f487c, type: 3}
       propertyPath: m_Name
       value: ValveStation
@@ -3782,6 +3926,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b83a6812d2fe2194fba2cd74e90f4291, type: 3}
+--- !u!114 &579893078809277693 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6061800491671968706, guid: b83a6812d2fe2194fba2cd74e90f4291, type: 3}
+  m_PrefabInstance: {fileID: 6634900392235183935}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1cac5a036dc2604cbba74096969a50a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Aquatica.Cockpit.RadarConsole
 --- !u!4 &1567031149472938271 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5308847067597723168, guid: b83a6812d2fe2194fba2cd74e90f4291, type: 3}

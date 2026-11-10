@@ -29,6 +29,7 @@ namespace Aquatica.Cockpit
         bool lit = true;
 
         public IndicatorState State => state;
+        public bool Blinking => blinking;
 
         void Awake()
         {

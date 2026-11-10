@@ -20,8 +20,14 @@ namespace Aquatica.Underwater
         public float minSpacing = 55f;
         [Tooltip("How far the feet are buried into the ground (m).")]
         public float footSink = 6f;
+        [Tooltip("Height difference under a foot (m) above which a placement is penalised (e.g. a foot on a crevasse edge).")]
+        public float maxFootStep = 4f;
+        [Tooltip("Share of placement candidates seeded inside a trench or crevasse, sized to span it from rim to rim.")]
+        [Range(0f, 1f)] public float ravineBias = 0.8f;
+        [Tooltip("Widest ravine crossing (foot to foot, m); arches over ravines may be longer than spanRange.")]
+        public float maxRavineSpan = 70f;
         [Tooltip("How many placements to try per arch; the one bridging the deepest dip wins.")]
-        public int candidates = 24;
+        public int candidates = 40;
         [Tooltip("Rubble mound heaped around each foot so it grows out of the ground (height relative to the foot radius).")]
         public float moundHeight = 0.9f;
         public float moundRadius = 2.6f;
@@ -41,6 +47,7 @@ namespace Aquatica.Underwater
         const int Rings = 64;
         const int Sides = 20;
         const int ChunkRings = 6;
+        const float LongSpanThickening = 1.2f;
 
         public struct Arch
         {
@@ -53,7 +60,7 @@ namespace Aquatica.Underwater
             var rng = new System.Random(seed ^ 0x5A3C);
             var arches = new List<Arch>();
             var placed = new List<Vector2>();
-            float limit = floor.Size * 0.5f - settings.spanRange.y - 10f;
+            float limit = floor.Size * 0.5f - settings.spanRange.y * 0.5f - 10f;
 
             for (int a = 0; a < settings.count; a++)
             {
@@ -64,31 +71,48 @@ namespace Aquatica.Underwater
 
                 for (int c = 0; c < settings.candidates; c++)
                 {
-                    var centre = new Vector2(Range(rng, -limit, limit), Range(rng, -limit, limit));
-                    if (centre.magnitude < settings.minDistanceFromStart + span * 0.5f)
-                        continue;
-                    bool crowded = false;
-                    foreach (var p in placed)
-                        crowded |= Vector2.Distance(p, centre) < settings.minSpacing;
-                    if (crowded)
-                        continue;
-
-                    float angle = Range(rng, 0f, Mathf.PI);
-                    var half = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * (span * 0.5f);
-                    var footA = centre - half;
-                    var footB = centre + half;
-
-                    // Prefer bridging a dip: feet high, middle low; and feet at similar heights
-                    float ha = floor.SampleLocal(footA.x, footA.y), hb = floor.SampleLocal(footB.x, footB.y);
-                    float mid = floor.SampleLocal(centre.x, centre.y);
-                    float rocky = floor.RockAt(footA.x, footA.y) + floor.RockAt(footB.x, footB.y);
-                    float score = Mathf.Min(ha, hb) - mid - Mathf.Abs(ha - hb) * 0.5f + rocky * 4f + (float)rng.NextDouble() * 3f;
-                    if (score > bestScore)
+                    // Most candidates start on a ravine floor (trench or crevasse) and are sized to cross it; the
+                    // rest are anywhere, so arches can still stand over gentler ground when no ravine fits
+                    bool ravine = rng.NextDouble() < settings.ravineBias;
+                    var centre = ravine ? RandomRavinePoint(floor, rng, limit) : RandomPoint(rng, limit);
+                    float angle0 = Range(rng, 0f, Mathf.PI);
+                    // A ravine spot tries several headings so one can cross it rather than run along it
+                    int headings = ravine ? 6 : 1;
+                    for (int h = 0; h < headings; h++)
                     {
-                        bestScore = score;
-                        bestA = footA;
-                        bestB = footB;
-                        found = true;
+                        float angle = angle0 + h * Mathf.PI / headings;
+                        var dir = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
+                        Vector2 footA, footB;
+                        if (ravine)
+                        {
+                            if (!CrossRavine(floor, settings, centre, dir, out footA, out footB))
+                                continue;
+                        }
+                        else
+                        {
+                            footA = centre - dir * (span * 0.5f);
+                            footB = centre + dir * (span * 0.5f);
+                        }
+
+                        var mid = (footA + footB) * 0.5f;
+                        if (mid.magnitude < settings.minDistanceFromStart + Vector2.Distance(footA, footB) * 0.5f)
+                            continue;
+                        if (Mathf.Max(Mathf.Abs(footA.x), Mathf.Abs(footA.y), Mathf.Abs(footB.x), Mathf.Abs(footB.y)) > floor.Size * 0.5f - 10f)
+                            continue;
+                        bool crowded = false;
+                        foreach (var p in placed)
+                            crowded |= Vector2.Distance(p, mid) < settings.minSpacing;
+                        if (crowded)
+                            continue;
+
+                        float score = Score(floor, settings, footA, footB) + (float)rng.NextDouble() * 3f;
+                        if (score > bestScore)
+                        {
+                            bestScore = score;
+                            bestA = footA;
+                            bestB = footB;
+                            found = true;
+                        }
                     }
                 }
 
@@ -100,9 +124,82 @@ namespace Aquatica.Underwater
             return arches;
         }
 
+        /// <summary>
+        /// How good a pair of feet is: the deeper the gap under the span (especially a trench or crevasse), the
+        /// better; feet should be on solid, fairly even ground outside the ravine, at similar heights.
+        /// </summary>
+        static float Score(Seafloor floor, RockArchSettings settings, Vector2 footA, Vector2 footB)
+        {
+            float ha = floor.SampleLocal(footA.x, footA.y), hb = floor.SampleLocal(footB.x, footB.y);
+            float lowest = float.MaxValue, passage = 0f;
+            for (int i = 3; i <= 13; i++)
+            {
+                var p = Vector2.Lerp(footA, footB, i / 16f);
+                lowest = Mathf.Min(lowest, floor.SampleLocal(p.x, p.y));
+                passage = Mathf.Max(passage, floor.PassageAt(p.x, p.y));
+            }
+            float dip = Mathf.Clamp(Mathf.Min(ha, hb) - lowest, -10f, 25f);
+            float feetInRavine = floor.PassageAt(footA.x, footA.y) + floor.PassageAt(footB.x, footB.y);
+            float rocky = floor.RockAt(footA.x, footA.y) + floor.RockAt(footB.x, footB.y);
+
+            // A foot right on a ravine edge is fine (it is sunk below its lowest ground), but a lopsided one is not
+            float footSize = settings.thicknessRange.y * 1.4f;
+            var axis = (footB - footA).normalized;
+            FootprintRange(floor, footA, axis, footSize, out float minA, out float maxA);
+            FootprintRange(floor, footB, axis, footSize, out float minB, out float maxB);
+            float uneven = Mathf.Max(0f, maxA - minA - settings.maxFootStep) + Mathf.Max(0f, maxB - minB - settings.maxFootStep);
+
+            return dip * 1.5f + passage * 25f - feetInRavine * 12f - Mathf.Abs(ha - hb) * 0.5f + rocky * 4f - uneven * 1.2f;
+        }
+
+        /// <summary>
+        /// From a point inside a ravine, walks both ways along <paramref name="dir"/> to its rims and puts a foot
+        /// just beyond each, so the foot stands on the rim rather than in the ravine. Fails if the crossing is
+        /// wider than <see cref="RockArchSettings.maxRavineSpan"/>.
+        /// </summary>
+        static bool CrossRavine(Seafloor floor, RockArchSettings settings, Vector2 centre, Vector2 dir, out Vector2 footA, out Vector2 footB)
+        {
+            footA = footB = default;
+            // The foot's whole footprint (see FootprintRange) stays on the rim
+            float margin = settings.thicknessRange.y * 1.4f * LongSpanThickening * 1.6f;
+            float reach = settings.maxRavineSpan - margin * 2f;
+            float toA = RimDistance(floor, centre, -dir, reach), toB = RimDistance(floor, centre, dir, reach);
+            if (toA < 0f || toB < 0f || toA + toB > reach)
+                return false;
+            // Narrow cracks still get a full-sized arch, centred on the crack
+            float extra = Mathf.Max(0f, settings.spanRange.x - (toA + toB + margin * 2f)) * 0.5f;
+            footA = centre - dir * (toA + margin + extra);
+            footB = centre + dir * (toB + margin + extra);
+            return true;
+        }
+
+        /// <summary>Distance to where the ravine ends along a direction, or -1 if it does not within <paramref name="reach"/>.</summary>
+        static float RimDistance(Seafloor floor, Vector2 from, Vector2 dir, float reach)
+        {
+            for (float d = 0f; d <= reach; d += 1f)
+            {
+                var p = from + dir * d;
+                if (floor.PassageAt(p.x, p.y) < 0.1f)
+                    return d;
+            }
+            return -1f;
+        }
+
+        static Vector2 RandomPoint(System.Random rng, float limit) => new(Range(rng, -limit, limit), Range(rng, -limit, limit));
+
+        /// <summary>A random point inside a trench or crevasse, or anywhere if none turns up.</summary>
+        static Vector2 RandomRavinePoint(Seafloor floor, System.Random rng, float limit)
+        {
+            var p = RandomPoint(rng, limit);
+            for (int i = 0; i < 40 && floor.PassageAt(p.x, p.y) < 0.5f; i++)
+                p = RandomPoint(rng, limit);
+            return p;
+        }
+
         static Arch Build(Seafloor floor, RockArchSettings settings, System.Random rng, Vector2 footA, Vector2 footB)
         {
-            float thickness = Range(rng, settings.thicknessRange);
+            // Long ravine crossings get a sturdier band
+            float thickness = Range(rng, settings.thicknessRange) * Mathf.Clamp(Vector2.Distance(footA, footB) / 36f, 1f, LongSpanThickening);
             float clearance = Range(rng, settings.clearanceRange);
             float footRadius = thickness * 1.4f;
             float noiseSeed = (float)rng.NextDouble() * 500f;
@@ -112,8 +209,13 @@ namespace Aquatica.Underwater
             floor.RaiseMound(footA, footRadius * settings.moundRadius, footRadius * settings.moundHeight, moundSeed);
             floor.RaiseMound(footB, footRadius * settings.moundRadius, footRadius * settings.moundHeight, moundSeed + 17);
 
-            float ha = floor.SampleLocal(footA.x, footA.y) - settings.footSink;
-            float hb = floor.SampleLocal(footB.x, footB.y) - settings.footSink;
+            // Sink each foot below the lowest ground under its whole footprint, not just its centre, so no part of
+            // it is left hanging where the ground falls away beside it
+            var spanAxis = (footB - footA).normalized;
+            FootprintRange(floor, footA, spanAxis, footRadius, out float lowA, out _);
+            FootprintRange(floor, footB, spanAxis, footRadius, out float lowB, out _);
+            float ha = Mathf.Min(floor.SampleLocal(footA.x, footA.y) - settings.footSink, lowA - 1f);
+            float hb = Mathf.Min(floor.SampleLocal(footB.x, footB.y) - settings.footSink, lowB - 1f);
             float highest = float.MinValue;
             for (int i = 1; i < 16; i++)
             {
@@ -199,6 +301,26 @@ namespace Aquatica.Underwater
             }
 
             return new Arch { Mesh = mesh, ColliderChunks = chunks.ToArray() };
+        }
+
+        /// <summary>
+        /// Lowest and highest ground under a foot: an ellipse covering its band (wider across the arch's plane than
+        /// along the span), including the lumps added to the surface.
+        /// </summary>
+        static void FootprintRange(Seafloor floor, Vector2 foot, Vector2 spanAxis, float footRadius, out float min, out float max)
+        {
+            var across = new Vector2(-spanAxis.y, spanAxis.x);
+            float acrossRadius = footRadius * 1.35f * 1.6f, alongRadius = footRadius * 1.6f;
+            min = max = floor.SampleLocal(foot.x, foot.y);
+            for (int ring = 1; ring <= 2; ring++)
+            for (int k = 0; k < 12; k++)
+            {
+                float phi = k * Mathf.PI * 2f / 12f, f = ring / 2f;
+                var p = foot + across * (Mathf.Cos(phi) * acrossRadius * f) + spanAxis * (Mathf.Sin(phi) * alongRadius * f);
+                float h = floor.SampleLocal(p.x, p.y);
+                min = Mathf.Min(min, h);
+                max = Mathf.Max(max, h);
+            }
         }
 
         /// <summary>Quads between consecutive rings, outward-facing (rings wrap around, so there is no seam).</summary>
