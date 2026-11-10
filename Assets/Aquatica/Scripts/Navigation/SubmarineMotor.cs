@@ -28,7 +28,7 @@ namespace Aquatica.Navigation
     public class SubmarineMotor : MonoBehaviour
     {
         [Header("Engine")]
-        [SerializeField] float maxSpeed = 3f;
+        [SerializeField] float maxSpeed = 3.6f;
         [Tooltip("Climb/dive speed relative to maxSpeed.")]
         [SerializeField] float verticalSpeedScale = 0.9f;
         [Tooltip("Seconds for the engine to spool up to full thrust.")]
@@ -186,6 +186,29 @@ namespace Aquatica.Navigation
         /// <summary>Raised when the submarine enters or leaves the currents at the edge of the area.</summary>
         public event Action<bool> CurrentsChanged;
 
+        /// <summary>A real hit on ground or rock: impact speed (m/s) and the world direction from the hull towards what was hit.</summary>
+        public event Action<float, Vector3> Bumped;
+
+        /// <summary>The hull is touching ground or rock while moving: sliding speed (m/s), 0 when clear.</summary>
+        public float ScrapeSpeed { get; private set; }
+
+        /// <summary>World direction from the hull towards what it is scraping along (valid while <see cref="ScrapeSpeed"/> &gt; 0).</summary>
+        public Vector3 ScrapeDirection { get; private set; }
+
+        /// <summary>
+        /// Knocks the cabin along a world direction (e.g. away from a fault), easing back with a decaying wobble.
+        /// Stronger jolts replace weaker ones still running.
+        /// </summary>
+        public void Jolt(Vector3 worldDirection, float amplitude, float duration = 0.8f)
+        {
+            if (joltTime > 0f && amplitude < joltAmplitude * (joltTime / joltDuration))
+                return;
+            joltDirection = worldDirection.sqrMagnitude > 1e-6f ? worldDirection.normalized : Vector3.up;
+            joltAmplitude = Mathf.Min(amplitude, 0.12f);
+            joltDuration = Mathf.Max(0.05f, duration);
+            joltTime = joltDuration;
+        }
+
         UnderwaterWorld world;
         Transform viewer;
         Transform rig;
@@ -208,6 +231,8 @@ namespace Aquatica.Navigation
         float shakeTime;
         float shakeAmplitude;
         float shakeSeed;
+        Vector3 joltDirection;
+        float joltAmplitude, joltDuration = 1f, joltTime;
 
         /// <summary>World-space depth of the hull's reference point below the water surface.</summary>
         public float DepthBelowSurface(Vector3 worldPoint) => world != null ? world.SurfaceHeight - worldPoint.y : 0f;
@@ -371,6 +396,7 @@ namespace Aquatica.Navigation
             var v = velocity;
             bool contact = false;
             float impact = 0f;
+            var contactNormal = Vector3.zero;
 
             // Two passes so sliding off one surface into another (a corner) is handled too
             for (int pass = 0; pass < 2; pass++)
@@ -384,6 +410,7 @@ namespace Aquatica.Navigation
                     break;
 
                 contact = true;
+                contactNormal += normal;
                 float headOn = Mathf.Clamp01(-Vector3.Dot(direction, normal));
                 float closing = -Vector3.Dot(v, normal);
                 float allowedClosing = free * headOn / contactBrakeTime;
@@ -402,8 +429,14 @@ namespace Aquatica.Navigation
             float strictY = Mathf.Clamp(v.y, Mathf.Min(intended.y, 0f), Mathf.Max(intended.y, 0f));
             v.y = Mathf.Lerp(strictY, v.y, collisionLift);
             if (contact && !braking && impact > minImpactSpeed)
+            {
                 Shake(impact);
+                Bumped?.Invoke(impact, -contactNormal.normalized);
+            }
             braking = contact;
+            ScrapeSpeed = contact ? v.magnitude : 0f;
+            if (contact)
+                ScrapeDirection = -contactNormal.normalized;
             velocity = v;
 
             // The current never shoves the hull into terrain either
@@ -428,7 +461,11 @@ namespace Aquatica.Navigation
                 {
                     float tailSpeed = Mathf.Abs(yawRate) * Mathf.Deg2Rad * collisionBounds.size.z;
                     if (tailSpeed > minImpactSpeed)
+                    {
                         Shake(tailSpeed);
+                        // The tail swings towards the side it's turning to
+                        Bumped?.Invoke(tailSpeed, transform.right * Mathf.Sign(yawRate));
+                    }
                     yawRate = 0f;
                 }
             }
@@ -564,6 +601,14 @@ namespace Aquatica.Navigation
                 var jitter = new Vector3(Mathf.PerlinNoise(t, shakeSeed) - 0.5f, Mathf.PerlinNoise(shakeSeed, t) - 0.5f,
                     Mathf.PerlinNoise(t + 31f, shakeSeed + 7f) - 0.5f) * 2f;
                 sway += jitter * (shakeAmplitude * envelope * envelope);
+            }
+            // Directional jolt: a push along the direction that wobbles back to rest
+            if (joltTime > 0f)
+            {
+                joltTime = Mathf.Max(0f, joltTime - dt);
+                float age = joltDuration - joltTime;
+                float envelope = joltTime / joltDuration;
+                sway += joltDirection * (joltAmplitude * envelope * envelope * Mathf.Cos(age * 15f) * Mathf.Clamp01(age * 40f));
             }
             var rotation = Quaternion.Euler(pitch, yaw, roll + Mathf.Sin(phase * 0.71f + 1.3f) * swayRoll);
 

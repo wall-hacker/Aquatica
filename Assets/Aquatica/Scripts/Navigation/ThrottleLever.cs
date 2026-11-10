@@ -1,3 +1,4 @@
+using Aquatica.Audio;
 using System;
 using Aquatica.Cockpit;
 using UnityEngine;
@@ -65,6 +66,7 @@ namespace Aquatica.Navigation
         float armVelocity;
         float screenUpAngle; // direction of gravity-up on the screen, degrees from the camera's +Y
         bool hasOrientation;
+        bool thunkPending;
 
         void Awake()
         {
@@ -112,6 +114,12 @@ namespace Aquatica.Navigation
             float accel = (target - armAngle) * armStiffness - armVelocity * armDamping;
             armVelocity += accel * dt;
             armAngle += armVelocity * dt;
+            // Swinging back after a release: thunk against the STOP end
+            if (thunkPending && armAngle <= stopAngle + 2f)
+            {
+                thunkPending = false;
+                Sfx.Play(SoundBank.LeverThunk, Mathf.Clamp01(Mathf.Abs(armVelocity) / 250f) * 0.6f + 0.15f);
+            }
             arm.localRotation = Quaternion.Euler(armAngle, 0f, 0f);
 
             Place();
@@ -192,6 +200,7 @@ namespace Aquatica.Navigation
             if (!IsHeld)
                 return;
             IsHeld = false;
+            thunkPending = true;
             HeldChanged?.Invoke(false);
         }
 
@@ -200,6 +209,8 @@ namespace Aquatica.Navigation
             if (!Visible || IsHeld)
                 return;
             IsHeld = true;
+            thunkPending = false;
+            Sfx.Play(SoundBank.LeverGrab, 0.6f);
             HeldChanged?.Invoke(true);
         }
 

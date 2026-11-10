@@ -1,3 +1,4 @@
+using Aquatica.Audio;
 using UnityEngine;
 
 namespace Aquatica.Cockpit
@@ -9,10 +10,20 @@ namespace Aquatica.Cockpit
 
         void Awake() => owner = GetComponentInParent<KeySwitch>();
 
-        public void OnPointerDown(Ray ray, RaycastHit hit) => owner.PressKey();
+        public void OnPointerDown(Ray ray, RaycastHit hit)
+        {
+            if (owner.IsCoverOpen)
+                Sfx.PlayAt(SoundBank.KeyTurn, transform.position, 0.75f);
+            owner.PressKey();
+        }
 
         public void OnPointerDrag(Ray ray) { }
 
-        public void OnPointerUp() => owner.ReleaseKey();
+        public void OnPointerUp()
+        {
+            if (owner.IsCoverOpen)
+                Sfx.PlayAt(SoundBank.ClickUp, transform.position, 0.45f);
+            owner.ReleaseKey();
+        }
     }
 }

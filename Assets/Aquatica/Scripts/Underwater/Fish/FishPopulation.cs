@@ -23,7 +23,7 @@ namespace Aquatica.Underwater.Fish
 
         [Header("Population")]
         [Tooltip("Fish kept alive around the submarine.")]
-        [SerializeField] int targetCount = 65;
+        [SerializeField] int targetCount = 100;
         [Tooltip("How often (s) the population is topped up / thinned out.")]
         [SerializeField] float maintenanceInterval = 0.4f;
         [Tooltip("Share of the population placed when the world is entered (the screen is still covered).")]
@@ -44,7 +44,7 @@ namespace Aquatica.Underwater.Fish
         [Tooltip("Share of spawns placed ahead of a moving submarine.")]
         [Range(0f, 1f)] [SerializeField] float spawnAheadBias = 0.75f;
         [Tooltip("New groups settle this far (m) from the submarine (or its path ahead) after swimming in out of the fog.")]
-        [SerializeField] Vector2 homeDistance = new(8f, 28f);
+        [SerializeField] Vector2 homeDistance = new(7f, 22f);
 
         [Header("Limits")]
         [Tooltip("Fish stay this far (m) inside the navigable area.")]

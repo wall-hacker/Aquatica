@@ -1,3 +1,4 @@
+using Aquatica.Audio;
 using System;
 using UnityEngine;
 
@@ -27,11 +28,17 @@ namespace Aquatica.Cockpit
         public void OnPointerDown(Ray ray, RaycastHit hit)
         {
             IsHeld = true;
+            Sfx.PlayAt(SoundBank.Click, transform.position, 0.7f);
             Pressed?.Invoke(this);
         }
 
         public void OnPointerDrag(Ray ray) { }
 
-        public void OnPointerUp() => IsHeld = false;
+        public void OnPointerUp()
+        {
+            if (IsHeld)
+                Sfx.PlayAt(SoundBank.ClickUp, transform.position, 0.5f);
+            IsHeld = false;
+        }
     }
 }

@@ -1,3 +1,4 @@
+using Aquatica.Audio;
 using System;
 using Aquatica.Expedition;
 using UnityEngine;
@@ -161,6 +162,7 @@ namespace Aquatica.Cockpit
         public void OnPointerDown(Ray ray, RaycastHit hit)
         {
             dragging = PointerAngle(ray, out lastPointerAngle);
+            Sfx.PlayAt(SoundBank.ValveGrab, wheel.position, 0.6f);
         }
 
         public void OnPointerDrag(Ray ray)

@@ -1,3 +1,4 @@
+using Aquatica.Audio;
 using System;
 using UnityEngine;
 
@@ -35,7 +36,11 @@ namespace Aquatica.Cockpit
                 Toggled?.Invoke(this);
         }
 
-        public void OnPointerDown(Ray ray, RaycastHit hit) => SetOn(!isOn);
+        public void OnPointerDown(Ray ray, RaycastHit hit)
+        {
+            Sfx.PlayAt(SoundBank.Clack, transform.position, 0.75f);
+            SetOn(!isOn);
+        }
 
         public void OnPointerDrag(Ray ray) { }
 

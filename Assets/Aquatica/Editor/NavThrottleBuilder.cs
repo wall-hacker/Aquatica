@@ -67,7 +67,7 @@ namespace Aquatica.EditorTools
                 new Section(0.000f, BaseHalfX, BaseHalfZ),
                 new Section(0.032f, BaseHalfX - 0.004f, BaseHalfZ - 0.004f),
                 new Section(BaseHeight, BaseHalfX - 0.010f, BaseHalfZ - 0.010f),
-            }, true), "NavThrottle_Housing"), body);
+            }, true, capBottom: true), "NavThrottle_Housing"), body);
 
             Part(model, "HazardSkirt", Keep(Loft(new[]
             {
@@ -322,8 +322,9 @@ namespace Aquatica.EditorTools
         /// <summary>
         /// Flat-shaded loft through rectangular sections (bottom to top), optionally capped on top. Side faces use the
         /// upper half of the body texture; the -Z face (towards the player) the lower half with the label.
+        /// The lever floats in view, so anything seen from below needs a bottom cap (the shader culls back faces).
         /// </summary>
-        static Mesh Loft(Section[] sections, bool capTop, float uvRepeat = 1f)
+        static Mesh Loft(Section[] sections, bool capTop, float uvRepeat = 1f, bool capBottom = false)
         {
             var b = new MeshBuilder();
             float bottom = sections[0].Y, top = sections[^1].Y;
@@ -352,6 +353,12 @@ namespace Aquatica.EditorTools
                 var t = sections[^1];
                 b.Quad(new Vector3(-t.HalfX, t.Y, -t.HalfZ), new Vector3(-t.HalfX, t.Y, t.HalfZ), new Vector3(t.HalfX, t.Y, t.HalfZ), new Vector3(t.HalfX, t.Y, -t.HalfZ),
                     new Vector2(0.05f, 0.55f), new Vector2(0.05f, 0.95f), new Vector2(0.95f, 0.95f), new Vector2(0.95f, 0.55f));
+            }
+            if (capBottom)
+            {
+                var o = sections[0];
+                b.Quad(new Vector3(-o.HalfX, o.Y, -o.HalfZ), new Vector3(o.HalfX, o.Y, -o.HalfZ), new Vector3(o.HalfX, o.Y, o.HalfZ), new Vector3(-o.HalfX, o.Y, o.HalfZ),
+                    new Vector2(0.05f, 0.55f), new Vector2(0.95f, 0.55f), new Vector2(0.95f, 0.95f), new Vector2(0.05f, 0.95f));
             }
             return b.ToMesh();
         }

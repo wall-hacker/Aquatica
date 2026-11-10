@@ -1,3 +1,4 @@
+using Aquatica.Audio;
 using System;
 using UnityEngine;
 
@@ -40,6 +41,7 @@ namespace Aquatica.Cockpit
         float power;
         bool powered = true;
         int pageHash;
+        int tapCount;
 
         void Awake()
         {
@@ -124,8 +126,11 @@ namespace Aquatica.Cockpit
 
         public void OnPointerDown(Ray ray, RaycastHit hit)
         {
-            if (powered)
-                Tapped?.Invoke(this);
+            if (!powered)
+                return;
+            // Alternate two beeps so quick repeated taps don't drone
+            Sfx.PlayAt((tapCount++ & 1) == 0 ? SoundBank.ScreenBeep : SoundBank.ScreenBeepAlt, transform.position, 0.6f, 0f);
+            Tapped?.Invoke(this);
         }
 
         public void OnPointerDrag(Ray ray) { }

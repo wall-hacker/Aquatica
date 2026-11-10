@@ -1163,6 +1163,9 @@ GameObject:
   - component: {fileID: 6256387185957020304}
   - component: {fileID: 411828728739540629}
   - component: {fileID: 7924320743619838133}
+  - component: {fileID: 3235190881211594535}
+  - component: {fileID: 1465303668896638048}
+  - component: {fileID: 7019535730612305803}
   m_Layer: 0
   m_Name: UnderwaterWorld
   m_TagString: Untagged
@@ -1276,7 +1279,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Aquatica.Underwater.Fish.FishPopulation
   catalog: {fileID: 11400000, guid: 4ff3988b250369c40acfc8495769a2a6, type: 2}
   motor: {fileID: 4063649671018478372}
-  targetCount: 65
+  targetCount: 100
   maintenanceInterval: 0.4
   initialFill: 0.75
   initialMinDistance: 10
@@ -1286,7 +1289,7 @@ MonoBehaviour:
   spawnBand: 14
   despawnMargin: 28
   spawnAheadBias: 0.75
-  homeDistance: {x: 8, y: 28}
+  homeDistance: {x: 7, y: 22}
   areaMargin: 12
   surfaceMargin: 8
   hullMargin: 0.6
@@ -1336,6 +1339,67 @@ MonoBehaviour:
   maxBend: 0.85
   colliderRange: 24
   colliderShrink: 0.8
+--- !u!114 &3235190881211594535
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3821262873837685148}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea7b04521c5b6634d94999abcce17fa4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Aquatica.Audio.OceanAmbience
+  calmVolume: 0.32
+  tenseVolume: 0.38
+  calmUnderFault: 0.35
+  fadeInTime: 5
+  fadeOutTime: 3
+  toFaultTime: 2.5
+  fromFaultTime: 6
+--- !u!114 &1465303668896638048
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3821262873837685148}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c8aaf9fafb9b26449d4d6084af5fa1f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Aquatica.Audio.EngineSound
+  motor: {fileID: 0}
+  maxVolume: 0.22
+  attackTime: 0.35
+  releaseTime: 1.4
+  idlePitch: 0.62
+  fullPitch: 1
+  referenceSpeed: 3.6
+--- !u!114 &7019535730612305803
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3821262873837685148}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbea366e6eb27884b9546a26ada45372, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Aquatica.Audio.SubFeedback
+  minScrapeSpeed: 0.15
+  scrapeStrength: 0.1
+  scrapeInterval: {x: 0.09, y: 0.2}
+  bumpStrengthPerSpeed: 0.12
+  maxBumpStrength: 0.45
+  faultJolt: 0.07
+  faultHitVolume: 0.9
+  pulseInterval: 2.2
+  pulseStrength: {x: 0.3, y: 0.85}
+  pulseJolt: 0.018
+  workingScale: 0.3
 --- !u!1 &3897076267657604379
 GameObject:
   m_ObjectHideFlags: 0
@@ -3611,7 +3675,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf97fb9c99ec0344e908807233aa95ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Aquatica.Navigation.SubmarineMotor
-  maxSpeed: 3
+  maxSpeed: 3.6
   verticalSpeedScale: 0.9
   spoolUpTime: 1.6
   spoolDownTime: 0.8
