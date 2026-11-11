@@ -41,3 +41,14 @@
 # OS
 .DS_Store
 Thumbs.db
+
+# Showcase capture: demo mode (fake-AR photosphere playthrough + capture toolkit) and media work files
+/Assets/_DemoMode/
+/Assets/_DemoMode.meta
+/Assets/_MediaCapture/
+/Assets/_MediaCapture.meta
+/GameplayBreakdown/_tools/
+# full-size media masters (GitHub-sized copies live in GameplayBreakdown/github/)
+/GameplayBreakdown/videos/
+/GameplayBreakdown/trailer/
+/GameplayBreakdown/screenshots/raw/

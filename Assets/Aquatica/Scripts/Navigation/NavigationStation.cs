@@ -264,7 +264,7 @@ namespace Aquatica.Navigation
             else if (Overlay == null || !Overlay.DrawMonitor(s))
             {
                 s.SetColor(null);
-                s.Text("DSRV AQUATICA", cx, 5, TextAlign.Center, 1, 0.8f);
+                s.Text("AQUATICA", cx, 5, TextAlign.Center, 1, 0.8f);
                 s.Rule(16);
                 s.Text($"DEPTH {motor.DepthBelowSurface(viewCamera.transform.position):0.0} M", 6, 24, TextAlign.Left, 1, 0.85f);
                 s.Text($"HDG   {Mathf.RoundToInt(motor.Bearing) % 360:000}", 6, 35, TextAlign.Left, 1, 0.85f);
